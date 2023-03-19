@@ -1,5 +1,8 @@
 #include "stdinc.hpp"
+#include "game.hpp"
 
 int main(int argc, char **argv) {
-    return 0;
+    using namespace zifmann::chess;
+    Game game;
+    return game.Start();
 }

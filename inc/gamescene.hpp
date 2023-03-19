@@ -10,13 +10,12 @@ namespace chess {
 class GameScene : public State {
     public:
         GameScene();
-        void Render();
-        void Update();
+        void Render(sf::RenderTarget& target);
+        void Update(float dt);
         void ProcessEvent(const sf::Event& event);
     private:
-        void DrawBoard();
         ChessBoard m_board;
-}
+};
 
 }}
 
