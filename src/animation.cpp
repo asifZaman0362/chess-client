@@ -1,5 +1,4 @@
 #include "animation.hpp"
-#include <iostream>
 
 namespace zifmann {
     namespace chess {
@@ -53,7 +52,6 @@ namespace zifmann {
             auto rect = m_sprite->getTextureRect();
             rect.left = m_start.x + m_frameSize.x * m_frameIdx;
             m_sprite->setTextureRect(rect);
-            std::cout << "Hello\n";
         }
 
     }

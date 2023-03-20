@@ -1,7 +1,7 @@
 #include "gamescene.hpp"
 #include "assetmanager.hpp"
+#include "logger.hpp"
 #include <cstring>
-#include <iostream>
 
 namespace zifmann {
 namespace chess {
@@ -12,11 +12,9 @@ GameScene::GameScene() {
     m_chessPiece.setTextureRect(sf::IntRect(0, 0, 16, 16));
     m_chessPiece.setScale(6, 6);
     if (!m_chessPieceAnim.Create(&m_chessPiece, Vector2ui(16, 16), Vector2ui(0, 0), 5, 0.16f)) {
-        //log_error("failed to load animation!");
-        std::cerr << "failed to load animation!" << std::endl;
+        log_error("failed to load animation!");
     } else {
         m_chessPieceAnim.Play();
-        std::cout << "loaded animation";
     }
 }
 

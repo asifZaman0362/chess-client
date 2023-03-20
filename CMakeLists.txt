@@ -12,7 +12,7 @@ set(HEADERS inc/stdinc.hpp inc/chessboard.hpp inc/chesspiece.hpp
             inc/assetmanager.hpp inc/logger.hpp inc/animation.hpp)
 set(SOURCES src/main.cpp src/chessboard.cpp src/gamescene.cpp
             src/state.cpp src/game.cpp src/assetmanager.cpp
-            src/animation.cpp)
+            src/animation.cpp src/logger.cpp)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
             DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Assets/)
