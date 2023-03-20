@@ -27,10 +27,9 @@ ChessBoard::ChessBoard() {
     for (uint8_t i = 0; i < 64; i++) {
         auto x = i / 8;
         auto y = i % 8;
-        squares[x][y] = sf::RectangleShape(sf::Vector2f(30, 30));
-        squares[x][y].setFillColor((i % 2) ? sf::Color::White : sf::Color::Black);
-        squares[x][y].setOutlineColor(sf::Color::Red);
-        squares[x][y].setPosition(x * 40, y * 40);
+        squares[x][y] = sf::RectangleShape(sf::Vector2f(100, 100));
+        squares[x][y].setFillColor((i + ((i / 8) % 2)) % 2 ? sf::Color::White : sf::Color::Black);
+        squares[x][y].setPosition(x * 100, y * 100);
     }
 }
 

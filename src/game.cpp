@@ -8,7 +8,7 @@ namespace zifmann {
         Game::Game() {}
 
         int Game::Start() {
-            m_window.create(sf::VideoMode(800, 400), "Chess");
+            m_window.create(sf::VideoMode(1000, 1000), "Chess");
             m_window.setFramerateLimit(60);
             m_running = true;
             auto gamescreen = std::make_unique<GameScene>();
