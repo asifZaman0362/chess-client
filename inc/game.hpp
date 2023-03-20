@@ -10,9 +10,10 @@ namespace zifmann {
         class Game {
             private:
                 sf::RenderWindow m_window;
+                sf::Clock m_clock;
                 bool m_running = false;
 
-                void Update();
+                void Update(float dt);
                 void Render();
                 void ProcessEvents(const sf::Event& event);
 

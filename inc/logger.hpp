@@ -18,7 +18,6 @@
 #define log_assert(condition, message, ...) assert(condition, message, __FILENAME__, __LINE__, ##__VA_ARGS__)
 #define dump(path) zifmann::logger::core::dump_logs(path)
 
-#endif
 
 namespace zifmann::logger::core {
 	
@@ -155,3 +154,4 @@ namespace zifmann::logger::core {
 
 }
 
+#endif

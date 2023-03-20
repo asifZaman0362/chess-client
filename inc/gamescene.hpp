@@ -3,6 +3,7 @@
 
 #include "state.hpp"
 #include "chessboard.hpp"
+#include "animation.hpp"
 
 namespace zifmann {
 namespace chess {
@@ -15,6 +16,8 @@ class GameScene : public State {
         void ProcessEvent(const sf::Event& event);
     private:
         ChessBoard m_board;
+        sf::Sprite m_chessPiece;
+        SpritesheetAnimation m_chessPieceAnim;
 };
 
 }}

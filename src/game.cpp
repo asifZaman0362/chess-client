@@ -15,19 +15,22 @@ namespace zifmann {
             StateManager::LoadState(std::move(gamescreen));
             while (m_running) {
                 sf::Event e{};
+                auto dt = m_clock.restart().asSeconds();
                 while (m_window.pollEvent(e)) {
                     if (e.type == sf::Event::Closed) {
                         m_running = false;
                     } else ProcessEvents(e);
                 }
-                Update();
+                Update(dt);
                 Render();
             }
             m_window.close();
             return EXIT_SUCCESS;
         }
 
-        void Game::Update() {}
+        void Game::Update(float dt) {
+            StateManager::Update(dt);
+        }
 
         void Game::ProcessEvents(const sf::Event& event) {}
 

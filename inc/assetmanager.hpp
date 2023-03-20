@@ -1,3 +1,6 @@
+#ifndef ASSETMANAGER_HPP
+#define ASSETMANAGER_HPP
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <unordered_map>
@@ -18,3 +21,5 @@ namespace zifmann {
         };
     }
 }
+
+#endif
