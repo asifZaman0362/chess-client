@@ -1,4 +1,5 @@
 #include "chessboard.hpp"
+
 #include <cstring>
 
 namespace zifmann {
@@ -28,29 +29,32 @@ ChessBoard::ChessBoard() {
         auto x = i / 8;
         auto y = i % 8;
         squares[x][y] = sf::RectangleShape(sf::Vector2f(100, 100));
-        squares[x][y].setFillColor((i + ((i / 8) % 2)) % 2 ? sf::Color::White : sf::Color::Black);
+        squares[x][y].setFillColor((i + ((i / 8) % 2)) % 2 ? sf::Color::White
+                                                           : sf::Color::Black);
         squares[x][y].setPosition(x * 100, y * 100);
     }
 }
 
 bool ChessBoard::TakePiece(uint8_t x, uint8_t y) {
-     if (x > 8 || y > 8) return false;
-     else if (!m_config[y][x]) return false; // empty
+    if (x > 8 || y > 8)
+        return false;
+    else if (!m_config[y][x])
+        return false;  // empty
     // play animation of taking away the piece
     return true;
 }
 
 bool ChessBoard::MakeMove(uint8_t x, uint8_t y, uint8_t piece) {
-    if (x > 8 || y > 8) return false; // invalid position
-    if ((m_config[y][x] & 64) == (piece & 64)) // same color piece already in x,y
+    if (x > 8 || y > 8) return false;  // invalid position
+    if ((m_config[y][x] & 64) ==
+        (piece & 64))  // same color piece already in x,y
         return false;
-    if (m_config[y][x] != 0)
-        TakePiece(x, y);
+    if (m_config[y][x] != 0) TakePiece(x, y);
     m_config[y][x] = piece;
     return true;
 }
 
-void ChessBoard::Render(sf::RenderTarget& target) {
+void ChessBoard::Render(sf::RenderTarget &target) {
     // Draw board
     for (uint8_t x = 0; x < 8; x++) {
         for (uint8_t y = 0; y < 8; y++) {
@@ -59,4 +63,5 @@ void ChessBoard::Render(sf::RenderTarget& target) {
     }
 }
 
-}}
+}  // namespace chess
+}  // namespace zifmann

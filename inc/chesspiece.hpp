@@ -16,13 +16,13 @@ enum PieceKind {
     WHITE = 64
 };
 
-
 class ChessPiece {
     Color m_color;
     Position m_position;
     PieceKind m_kind;
 };
 
-}}
+}  // namespace chess
+}  // namespace zifmann
 
 #endif

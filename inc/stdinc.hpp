@@ -9,8 +9,6 @@ struct Position {
     uint8_t y;
 };
 
-enum Color {
-    WHITE, BLACK
-};
+enum Color { WHITE, BLACK };
 
 #endif

@@ -1,4 +1,5 @@
 #include "state.hpp"
+
 #include <utility>
 
 namespace zifmann {
@@ -15,16 +16,15 @@ void StateManager::UnloadState() {
     if (!m_states.empty()) m_states.pop();
 }
 
-void StateManager::Render(sf::RenderTarget& target) {
+void StateManager::Render(sf::RenderTarget &target) {
     m_states.top().get()->Render(target);
 }
 
-void StateManager::Update(float dt) {
-    m_states.top().get()->Update(dt);
-}
+void StateManager::Update(float dt) { m_states.top().get()->Update(dt); }
 
-void StateManager::ProcessEvent(const sf::Event& event) {
+void StateManager::ProcessEvent(const sf::Event &event) {
     m_states.top().get()->ProcessEvent(event);
 }
 
-}}
+}  // namespace chess
+}  // namespace zifmann
