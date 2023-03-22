@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "menu.hpp"
+
 namespace zifmann {
 namespace chess {
 
@@ -11,8 +13,8 @@ int Game::Start() {
     m_window.create(sf::VideoMode(1000, 1000), "Chess");
     m_window.setFramerateLimit(60);
     m_running = true;
-    auto gamescreen = std::make_unique<GameScene>();
-    StateManager::LoadState(std::move(gamescreen));
+    auto menu = std::make_unique<MenuScene>();
+    StateManager::LoadState(std::move(menu));
     while (m_running) {
         sf::Event e{};
         auto dt = m_clock.restart().asSeconds();

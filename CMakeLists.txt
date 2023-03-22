@@ -8,11 +8,11 @@ find_package(SFML 2.5 COMPONENTS system window graphics audio network REQUIRED)
 include_directories(inc)
 
 set(HEADERS inc/stdinc.hpp inc/chessboard.hpp inc/chesspiece.hpp
-            inc/game.hpp inc/gamescene.hpp inc/state.hpp
-            inc/assetmanager.hpp inc/logger.hpp inc/animation.hpp)
+            inc/game.hpp inc/gamescene.hpp inc/state.hpp inc/canvas.hpp
+            inc/assetmanager.hpp inc/logger.hpp inc/animation.hpp inc/menu.hpp)
 set(SOURCES src/main.cpp src/chessboard.cpp src/gamescene.cpp
-            src/state.cpp src/game.cpp src/assetmanager.cpp
-            src/animation.cpp src/logger.cpp)
+            src/state.cpp src/game.cpp src/assetmanager.cpp src/canvas.cpp
+            src/animation.cpp src/logger.cpp src/menu.cpp)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
             DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Assets/)

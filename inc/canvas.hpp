@@ -1,3 +1,6 @@
+#ifndef CANVAS_HPP
+#define CANVAS_HPP
+
 #include <SFML/Graphics.hpp>
 #include <vector>
 
@@ -17,38 +20,68 @@ enum ScaleMode { Scale, Constant };
 
 class CanvasItem {
    private:
-    Anchor m_anchor;
+    int m_anchor;
     ScaleMode m_scaleMode;
     sf::Vector2f m_scale;
     sf::IntRect m_offset;
-    std::unique_ptr<sf::Drawable> m_drawable;
 
    public:
-    CanvasItem(std::unique_ptr<sf::Drawable> drawable, sf::IntRect rect,
-               Anchor anchor, ScaleMode scaleMode);
+    CanvasItem(sf::IntRect rect, int anchor, ScaleMode scaleMode);
+    virtual ~CanvasItem() = default;
     void Calculate(const sf::IntRect &parent);
+    virtual void SetSize(sf::Vector2i size) = 0;
+    virtual void SetPosition(sf::Vector2i position) = 0;
+    virtual sf::Vector2f GetPixelSize() const = 0;
+    virtual void draw(sf::RenderTarget &target) const = 0;
 };
 
-class NineSliceSprite : public sf::Drawable {
+class CanvasSprite : public CanvasItem {
    private:
-    sf::Sprite m_inner;
-    sf::Texture m_texture;
-    sf::Vector2u m_sliceSize;
-    sf::Vector2u m_sliceGap;
+    sf::Sprite m_sprite;
 
    public:
-    NineSliceSprite(sf::Texture *texture, sf::Vector2u size, sf::Vector2u gap);
-    void draw(sf::RenderTarget &target, sf::RenderStates &states);
+    CanvasSprite(sf::Texture *texture, sf::IntRect textureRect,
+                 sf::IntRect offset, int anchor, ScaleMode scaleMode);
+    ~CanvasSprite() = default;
+    void SetSize(sf::Vector2i size) override;
+    void SetPosition(sf::Vector2i position) override;
+    virtual sf::Vector2f GetPixelSize() const override;
+    void draw(sf::RenderTarget &target) const override;
 };
 
-class Canvas : public sf::Drawable {
+class CanvasText : public CanvasItem {
    private:
-    std::vector<std::unique_ptr<CanvasItem>> m_items;
+    sf::Text m_text;
+    sf::Font m_font;
+    sf::String m_string;
 
    public:
-    void AddChild(std::unique_ptr<CanvasItem> item);
-    void draw(sf::RenderTarget &target, sf::RenderStates &states);
+    CanvasText(const sf::String &string, sf::Font *font, sf::IntRect offset,
+               int anchor, ScaleMode scaleMode);
+    ~CanvasText() = default;
+    void SetSize(sf::Vector2i size) override;
+    void SetPosition(sf::Vector2i position) override;
+    virtual sf::Vector2f GetPixelSize() const override;
+    void draw(sf::RenderTarget &target) const override;
+    void SetCharacterSize(const unsigned int);
+    void SetString(const sf::String &string);
+};
+
+class Canvas {
+   private:
+    std::vector<CanvasItem *> m_items;
+
+   public:
+    Canvas() = default;
+    Canvas(Canvas &);
+    Canvas(Canvas &&);
+    ~Canvas();
+    void AddChild(CanvasItem *item);
+    void draw(sf::RenderTarget &target);
+    void UpdateSize(sf::Vector2u size);
 };
 
 }  // namespace chess
 }  // namespace zifmann
+
+#endif
