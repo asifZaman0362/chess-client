@@ -10,10 +10,10 @@ namespace chess {
 Game::Game() {}
 
 int Game::Start() {
-    m_window.create(sf::VideoMode(1000, 1000), "Chess");
+    m_window.create(sf::VideoMode(1000, 1000), "SuperMegaChess");
     m_window.setFramerateLimit(60);
     m_running = true;
-    auto menu = std::make_unique<MenuScene>();
+    auto menu = std::make_unique<MenuScene>(&m_window);
     StateManager::LoadState(std::move(menu));
     while (m_running) {
         sf::Event e{};

@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "canvas.hpp"
+#include "eventsystem.hpp"
 #include "state.hpp"
 
 namespace zifmann {
@@ -11,9 +12,13 @@ class MenuScene : public State {
    private:
     Canvas m_canvas;
     sf::Sound m_audioPlayer;
+    EventSystem m_eventSystem;
+    sf::RenderWindow *m_window;
+
+    void CreateUI();
 
    public:
-    MenuScene();
+    MenuScene(sf::RenderWindow *window);
     void Render(sf::RenderTarget &target);
     void Update(float dt);
     void ProcessEvent(const sf::Event &event);

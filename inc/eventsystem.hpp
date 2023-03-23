@@ -1,3 +1,6 @@
+#ifndef EVENTSYSTEM_HPP
+#define EVENTSYSTEM_HPP
+
 #include <SFML/Graphics.hpp>
 #include <unordered_map>
 
@@ -29,6 +32,7 @@ class EventSystem {
     std::vector<RawKeyListener *> m_rawKeyListeners;
     std::vector<MouseListener *> m_mouseListeners;
 
+   public:
     EventSystem() = default;
     void ProcessEvent(const sf::Event &event, sf::RenderWindow &window);
     void AddKeyListener(KeyListener *listener, sf::Keyboard::Key key);
@@ -41,3 +45,5 @@ class EventSystem {
 
 }  // namespace chess
 }  // namespace zifmann
+
+#endif

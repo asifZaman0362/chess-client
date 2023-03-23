@@ -1,6 +1,7 @@
 #include "canvas.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 #include "logger.hpp"
 
@@ -13,8 +14,14 @@ CanvasItem::CanvasItem(sf::IntRect rect, int anchor, ScaleMode scaleMode)
       m_scaleMode(scaleMode),
       m_offset(rect) {}
 
+void CanvasItem::SetOffset(sf::IntRect offset) {
+    m_offset = offset;
+    if (m_parent) Calculate(*m_parent);
+}
+
 void CanvasItem::Calculate(const sf::IntRect &parent) {
     // calculate the position first
+    m_parent = &parent;
     sf::Vector2i parentPosition, pos;
     parentPosition.x = parent.width / 2 + parent.left;
     parentPosition.y = parent.height / 2 + parent.top;
@@ -82,6 +89,35 @@ CanvasText::CanvasText(const sf::String &string, sf::Font *font,
     m_text.setString(string);
 }
 
+sf::Vector2f round(const sf::Vector2f vector) {
+    return sf::Vector2f{std::round(vector.x), std::round(vector.y)};
+}
+
+void CanvasText::Calculate(const sf::IntRect &parent) {
+    // calculate the position first
+    m_parent = &parent;
+    auto center = sf::Vector2f{m_text.getGlobalBounds().width,
+                               m_text.getGlobalBounds().height} /
+                  2.f;
+    auto localBounds = center + sf::Vector2f{m_text.getLocalBounds().left,
+                                             m_text.getLocalBounds().top};
+    auto rounded = round(localBounds);
+    m_text.setOrigin(rounded);
+    sf::Vector2i parentPosition, pos;
+    parentPosition.x = parent.width / 2 + parent.left;
+    parentPosition.y = parent.height / 2 + parent.top;
+    if (m_scaleMode == Constant) {
+        SetPosition(pos);
+    } else {
+    }
+}
+
+sf::FloatRect CanvasText::GetGlobalBounds() const {
+    return m_text.getGlobalBounds();
+}
+
+sf::Text &CanvasText::GetText() { return m_text; }
+
 int findBestFitCharacterSize(const sf::String &str, const sf::Font &font,
                              const sf::Vector2f &size) {
     int minSize = 1;
@@ -104,24 +140,6 @@ int findBestFitCharacterSize(const sf::String &str, const sf::Font &font,
 }
 
 void CanvasText::SetSize(sf::Vector2i size) {
-    /*
-     * This was my first approach and I guess this would work for monospaced
-     * fonts but not for variable width fonts
-     *
-    auto csize = m_text.getCharacterSize(); size_t prev = 0, next = 0;
-    size_t max = 0, lines = 1;
-    while (true) {
-        next = m_string.find('\n', prev);
-        if (next == std::string::npos) {
-            size_t len = m_string.getSize() - prev;
-            if (len > max) max = len;
-            break;
-        }
-        size_t len = next - prev;
-        if (len > max) max = len;
-        prev = next + 1;
-        lines++;
-    } */
     int characterSize = findBestFitCharacterSize(m_string, m_font,
                                                  sf::Vector2f(size.x, size.y));
     m_text.setCharacterSize(characterSize);
@@ -129,6 +147,9 @@ void CanvasText::SetSize(sf::Vector2i size) {
 
 void CanvasText::SetPosition(sf::Vector2i position) {
     m_text.setPosition(position.x, position.y);
+    log_debug("pos: %i %i", position.x, position.y);
+    log_debug("pos: %i %i", m_text.getGlobalBounds().left,
+              m_text.getGlobalBounds().width);
 }
 
 sf::Vector2f CanvasText::GetPixelSize() const {

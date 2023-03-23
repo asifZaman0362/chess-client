@@ -19,16 +19,18 @@ enum Anchor {
 enum ScaleMode { Scale, Constant };
 
 class CanvasItem {
-   private:
+   protected:
     int m_anchor;
     ScaleMode m_scaleMode;
     sf::Vector2f m_scale;
     sf::IntRect m_offset;
+    const sf::IntRect *m_parent;
 
    public:
     CanvasItem(sf::IntRect rect, int anchor, ScaleMode scaleMode);
     virtual ~CanvasItem() = default;
-    void Calculate(const sf::IntRect &parent);
+    void SetOffset(sf::IntRect offset);
+    virtual void Calculate(const sf::IntRect &parent);
     virtual void SetSize(sf::Vector2i size) = 0;
     virtual void SetPosition(sf::Vector2i position) = 0;
     virtual sf::Vector2f GetPixelSize() const = 0;
@@ -36,7 +38,7 @@ class CanvasItem {
 };
 
 class CanvasSprite : public CanvasItem {
-   private:
+   protected:
     sf::Sprite m_sprite;
 
    public:
@@ -46,11 +48,11 @@ class CanvasSprite : public CanvasItem {
     void SetSize(sf::Vector2i size) override;
     void SetPosition(sf::Vector2i position) override;
     virtual sf::Vector2f GetPixelSize() const override;
-    void draw(sf::RenderTarget &target) const override;
+    virtual void draw(sf::RenderTarget &target) const override;
 };
 
 class CanvasText : public CanvasItem {
-   private:
+   protected:
     sf::Text m_text;
     sf::Font m_font;
     sf::String m_string;
@@ -59,16 +61,19 @@ class CanvasText : public CanvasItem {
     CanvasText(const sf::String &string, sf::Font *font, sf::IntRect offset,
                int anchor, ScaleMode scaleMode);
     ~CanvasText() = default;
+    sf::Text &GetText();
     void SetSize(sf::Vector2i size) override;
     void SetPosition(sf::Vector2i position) override;
+    virtual void Calculate(const sf::IntRect &parent) override;
     virtual sf::Vector2f GetPixelSize() const override;
     void draw(sf::RenderTarget &target) const override;
     void SetCharacterSize(const unsigned int);
     void SetString(const sf::String &string);
+    sf::FloatRect GetGlobalBounds() const;
 };
 
 class Canvas {
-   private:
+   protected:
     std::vector<CanvasItem *> m_items;
 
    public:
