@@ -93,6 +93,22 @@ sf::Vector2f round(const sf::Vector2f vector) {
     return sf::Vector2f{std::round(vector.x), std::round(vector.y)};
 }
 
+sf::Vector2f getPosition(sf::FloatRect rect) {
+    return sf::Vector2f(rect.left, rect.top);
+}
+
+sf::Vector2f getPosition(sf::IntRect rect) {
+    return sf::Vector2f(rect.left, rect.top);
+}
+
+sf::Vector2f getSize(sf::FloatRect rect) {
+    return sf::Vector2f(rect.width, rect.height);
+}
+
+sf::Vector2f getSize(sf::IntRect rect) {
+    return sf::Vector2f(rect.width, rect.height);
+}
+
 void CanvasText::Calculate(const sf::IntRect &parent) {
     // calculate the position first
     m_parent = &parent;
@@ -106,10 +122,15 @@ void CanvasText::Calculate(const sf::IntRect &parent) {
     sf::Vector2i parentPosition, pos;
     parentPosition.x = parent.width / 2 + parent.left;
     parentPosition.y = parent.height / 2 + parent.top;
-    if (m_scaleMode == Constant) {
+    m_text.setOrigin(getSize(m_text.getGlobalBounds()) / 2.f +
+                     getPosition(m_text.getLocalBounds()));
+    m_text.setPosition(getPosition(parent) + (getSize(parent) / 2.f));
+    // Its centred by default, I don't want to worry about other alignments
+    // right now
+    /*if (m_scaleMode == Constant) {
         SetPosition(pos);
     } else {
-    }
+    }*/
 }
 
 sf::FloatRect CanvasText::GetGlobalBounds() const {

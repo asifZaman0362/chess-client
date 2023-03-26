@@ -24,7 +24,7 @@ void MenuScene::CreateUI() {
         sf::IntRect(0, 50, 500, 100), Top | CentreH, Constant);
     auto subtitle =
         new CanvasText("The best chess game on the internet!",
-                       AssetManager::GetFont("OpenSans.ttf"),
+                       AssetManager::GetFont("kenneypixel.ttf"),
                        sf::IntRect(0, 0, 500, 100), Top | Left, Constant);
 
     sf::IntRect textureRect[] = {sf::IntRect(0, 0, 48, 16),
@@ -36,13 +36,13 @@ void MenuScene::CreateUI() {
     auto playButton = new LabeledButton(
         AssetManager::GetTexture("button.png"), textureRect,
         sf::IntRect(0, 16 * 4, 144, 16 * 3), labelOffset, CentreH | CentreV,
-        Constant, "play", AssetManager::GetFont("OpenSans.ttf"));
+        Constant, "play", AssetManager::GetFont("kenneypixel.ttf"));
     playButton->SetAction([]() -> void { log_debug("hello from button!"); });
     playButton->SetLabelColor(sf::Color::Black);
     auto exitButton = new LabeledButton(
         AssetManager::GetTexture("button.png"), textureRect,
         sf::IntRect(0, 0, 144, 16 * 3), labelOffset, CentreH | CentreV,
-        Constant, "EXIT", AssetManager::GetFont("OpenSans.ttf"));
+        Constant, "EXIT", AssetManager::GetFont("kenneypixel.ttf"));
     exitButton->SetAction([]() -> void { log_debug("hello from button!"); });
     exitButton->SetLabelColor(sf::Color::Black);
 
