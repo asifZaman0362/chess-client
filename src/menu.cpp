@@ -1,6 +1,7 @@
 #include "menu.hpp"
 
 #include "assetmanager.hpp"
+#include "game.hpp"
 #include "logger.hpp"
 #include "widgets.hpp"
 
@@ -33,28 +34,47 @@ void MenuScene::CreateUI() {
                                  sf::IntRect(48, 0, 48, 16),
                                  sf::IntRect(96, 0, 48, 16)};
     sf::IntRect labelOffset[] = {sf::IntRect(0, 0, 0, 0),
-                                 sf::IntRect(0, 0, 0, 0),
-                                 sf::IntRect(0, 0, 0, 0)};
+                                 sf::IntRect(0, 2, 0, 0),
+                                 sf::IntRect(0, 4, 0, 0)};
+    sf::IntRect textureRectSquare[] = {sf::IntRect(0, 0, 16, 16),
+                                       sf::IntRect(16, 0, 16, 16),
+                                       sf::IntRect(32, 0, 16, 16)};
     auto playButton = new LabeledButton(
         AssetManager::GetTexture("button.png"), textureRect,
         sf::IntRect(0, 16 * 4, 144, 16 * 3), labelOffset, CentreH | CentreV,
-        Constant, "play", AssetManager::GetFont("kenneypixel.ttf"));
+        Constant, "play", AssetManager::GetFont("kenneypixel.ttf"),
+        m_eventSystem);
+    playButton->SetCharacterSize(40);
+    playButton->SetAction([]() -> void { log_debug("hello from button!"); });
+    playButton->SetLabelColor(sf::Color::Black);
     playButton->SetCharacterSize(40);
     playButton->SetAction([]() -> void { log_debug("hello from button!"); });
     playButton->SetLabelColor(sf::Color::Black);
     auto exitButton = new LabeledButton(
         AssetManager::GetTexture("button.png"), textureRect,
         sf::IntRect(0, 0, 144, 16 * 3), labelOffset, CentreH | CentreV,
-        Constant, "exit", AssetManager::GetFont("kenneypixel.ttf"));
-    exitButton->SetAction([]() -> void { log_debug("hello from button!"); });
-    exitButton->SetLabelColor(sf::Color::Black);
+        Constant, "exit", AssetManager::GetFont("kenneypixel.ttf"),
+        m_eventSystem);
+    exitButton->SetAction([]() -> void { Game::Quit(); });
+    exitButton->SetLabelColor(sf::Color::White);
     exitButton->SetCharacterSize(40);
+    exitButton->SetTint(sf::Color(255, 100, 80));
+    auto musicButton =
+        new SpriteButton(AssetManager::GetTexture("music.png"),
+                         textureRectSquare, sf::IntRect(-30, -64, 48, 48),
+                         CentreH | CentreV, Constant, m_eventSystem);
+    auto soundButton =
+        new SpriteButton(AssetManager::GetTexture("sound.png"),
+                         textureRectSquare, sf::IntRect(30, -64, 48, 48),
+                         CentreH | CentreV, Constant, m_eventSystem);
 
     m_canvas.AddChild(bg);
     m_canvas.AddChild(title);
     m_canvas.AddChild(subtitle);
     m_canvas.AddChild(playButton);
     m_canvas.AddChild(exitButton);
+    m_canvas.AddChild(musicButton);
+    m_canvas.AddChild(soundButton);
     m_canvas.UpdateSize(sf::Vector2u(1000, 1000));
 }
 

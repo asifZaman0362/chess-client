@@ -9,7 +9,7 @@
 namespace zifmann {
 namespace chess {
 
-class MouseClickable : MouseListener {
+class MouseClickable : public MouseListener {
    private:
     bool m_hovered;
     bool m_down;
@@ -34,12 +34,14 @@ class SpriteButton : public CanvasSprite, public MouseClickable {
 
    public:
     SpriteButton(sf::Texture *texture, sf::IntRect textureRect[3],
-                 sf::IntRect offset, int anchor, ScaleMode scaleMode);
+                 sf::IntRect offset, int anchor, ScaleMode scaleMode,
+                 EventSystem &events);
     virtual void OnHoverEnter() override;
     virtual void OnHoverLeave() override;
     virtual void OnPushed() override;
     virtual void OnReleased() override;
     virtual sf::FloatRect GetRect() override;
+    void SetTint(const sf::Color &);
     // virtual void draw(sf::RenderTarget &target) const override;
 };
 
@@ -52,7 +54,8 @@ class LabeledButton : public SpriteButton {
    public:
     LabeledButton(sf::Texture *texture, sf::IntRect textureRect[3],
                   sf::IntRect offset, sf::IntRect labelOffset[3], int anchor,
-                  ScaleMode scaleMode, sf::String labelString, sf::Font *font);
+                  ScaleMode scaleMode, sf::String labelString, sf::Font *font,
+                  EventSystem &events);
     void SetLabelColor(const sf::Color color);
     void SetCharacterSize(int size);
     virtual void OnHoverEnter() override;

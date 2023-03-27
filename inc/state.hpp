@@ -14,6 +14,7 @@ class State {
     virtual void Render(sf::RenderTarget &target) = 0;
     virtual void Update(float dt) = 0;
     virtual void ProcessEvent(const sf::Event &event) = 0;
+    virtual void OnQuit();
     virtual ~State() = default;
 };
 
@@ -27,6 +28,7 @@ class StateManager {
     static void Render(sf::RenderTarget &target);
     static void Update(float dt);
     static void ProcessEvent(const sf::Event &event);
+    static void OnQuit();
 };
 
 }  // namespace chess

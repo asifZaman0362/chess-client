@@ -24,12 +24,12 @@ class CanvasItem {
     ScaleMode m_scaleMode;
     sf::Vector2f m_scale;
     sf::IntRect m_offset;
-    const sf::IntRect *m_parent;
+    sf::IntRect m_parent;
 
    public:
     CanvasItem(sf::IntRect rect, int anchor, ScaleMode scaleMode);
     virtual ~CanvasItem() = default;
-    void SetOffset(sf::IntRect offset);
+    void SetOffset(const sf::IntRect &offset);
     virtual void Calculate(const sf::IntRect &parent);
     virtual void SetSize(sf::Vector2i size) = 0;
     virtual void SetPosition(sf::Vector2i position) = 0;
@@ -75,6 +75,9 @@ class CanvasText : public CanvasItem {
 class Canvas {
    protected:
     std::vector<CanvasItem *> m_items;
+    sf::Sprite m_cursor;
+    sf::IntRect m_cursorSize;
+    bool m_customCursor = false;
 
    public:
     Canvas() = default;
@@ -84,6 +87,8 @@ class Canvas {
     void AddChild(CanvasItem *item);
     void draw(sf::RenderTarget &target);
     void UpdateSize(sf::Vector2u size);
+    void SetCustomCursor(sf::Texture *cursorTexture, sf::IntRect rect);
+    void UpdateCursorState(bool pointer);
 };
 
 }  // namespace chess

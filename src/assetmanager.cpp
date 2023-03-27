@@ -10,6 +10,7 @@ namespace chess {
 std::unordered_map<const char *, sf::Texture> AssetManager::m_textures;
 std::unordered_map<const char *, sf::SoundBuffer> AssetManager::m_audioClips;
 std::unordered_map<const char *, sf::Font> AssetManager::m_fonts;
+std::unordered_map<const char *, sf::Image> AssetManager::m_images;
 
 using std::filesystem::path;
 
@@ -61,6 +62,23 @@ sf::Font *AssetManager::GetFont(const char *filename) {
         }
     } else {
         return &m_fonts[filename];
+    }
+}
+
+sf::Image *AssetManager::GetImage(const char *filename) {
+    if (m_images.find(filename) == m_images.end()) {
+        sf::Image image;
+        auto base = path("Assets/Sprites");
+        auto file = path(filename);
+        if (image.loadFromFile(base / file)) {
+            m_images.insert({filename, image});
+            return &m_images[filename];
+        } else {
+            log_error("Failed to load image! File not found: ", filename);
+            return nullptr;
+        }
+    } else {
+        return &m_images[filename];
     }
 }
 

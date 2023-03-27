@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "logger.hpp"
-
 namespace zifmann {
 namespace chess {
 
@@ -14,14 +12,14 @@ CanvasItem::CanvasItem(sf::IntRect rect, int anchor, ScaleMode scaleMode)
       m_scaleMode(scaleMode),
       m_offset(rect) {}
 
-void CanvasItem::SetOffset(sf::IntRect offset) {
+void CanvasItem::SetOffset(const sf::IntRect &offset) {
     m_offset = offset;
-    if (m_parent) Calculate(*m_parent);
+    Calculate(m_parent);
 }
 
 void CanvasItem::Calculate(const sf::IntRect &parent) {
     // calculate the position first
-    m_parent = &parent;
+    m_parent = parent;
     sf::Vector2i parentPosition, pos;
     parentPosition.x = parent.width / 2 + parent.left;
     parentPosition.y = parent.height / 2 + parent.top;
@@ -118,11 +116,11 @@ void CanvasText::SetCharacterSize(const unsigned int size) {
 }
 
 void CanvasText::Calculate(const sf::IntRect &parent) {
-    m_parent = &parent;
+    m_parent = parent;
     if (m_scaleMode == Scale) {  // best-fit
         auto size =
-            getSize(*m_parent) - sf::Vector2f(m_offset.left + m_offset.width,
-                                              m_offset.top + m_offset.height);
+            getSize(m_parent) - sf::Vector2f(m_offset.left + m_offset.width,
+                                             m_offset.top + m_offset.height);
         auto rounded = roundi(size);
         SetSize(rounded);
     }
@@ -137,28 +135,27 @@ void CanvasText::Calculate(const sf::IntRect &parent) {
     float ox = 0;
     float oy = 0;
     if ((m_anchor & Top) == Top) {
-        y = m_offset.top + m_parent->top;
+        y = m_offset.top + m_parent.top;
     } else if ((m_anchor & Bottom) == Bottom) {
-        y = m_parent->top + m_parent->height - m_offset.top;
+        y = m_parent.top + m_parent.height - m_offset.top;
         oy = getPosition(m_text.getLocalBounds()).y +
              getSize(m_text.getGlobalBounds()).y;
     } else if ((m_anchor & CentreV) == CentreV) {
-        y = m_offset.top + m_parent->top + m_parent->height / 2.0f;
+        y = m_offset.top + m_parent.top + m_parent.height / 2.0f;
         oy = rounded.y;
     }
 
     if ((m_anchor & Left) == Left) {
-        x = m_offset.left + m_parent->left;
+        x = m_offset.left + m_parent.left;
     } else if ((m_anchor & Right) == Right) {
-        x = -m_offset.left + m_parent->left + m_parent->width;
+        x = -m_offset.left + m_parent.left + m_parent.width;
         ox = getPosition(m_text.getLocalBounds()).x +
              getSize(m_text.getGlobalBounds()).x;
     } else if ((m_anchor & CentreH) == CentreH) {
-        x = m_offset.left + m_parent->left + m_parent->width / 2.0f;
+        x = m_offset.left + m_parent.left + m_parent.width / 2.0f;
         ox = rounded.x;
     }
     m_text.setOrigin(sf::Vector2(ox, oy));
-    log_debug("%i %i", m_offset.left, m_offset.top);
     m_text.setPosition(x, y);
 }
 
@@ -210,6 +207,21 @@ void Canvas::draw(sf::RenderTarget &target) {
     for (auto &item : m_items) {
         item->draw(target);
     }
+}
+
+void Canvas::SetCustomCursor(sf::Texture *cursorTexture, sf::IntRect rect) {
+    m_customCursor = true;
+    m_cursor.setTexture(*cursorTexture);
+    m_cursor.setTextureRect(rect);
+    m_cursorSize = rect;
+}
+
+void Canvas::UpdateCursorState(bool pointer) {
+    auto s = m_cursorSize;
+    if (pointer) {
+        s.left = m_cursorSize.width;
+    }
+    m_cursor.setTextureRect(s);
 }
 
 Canvas::Canvas(Canvas &other) {

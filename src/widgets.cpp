@@ -1,15 +1,19 @@
 #include "widgets.hpp"
 
-#include "logger.hpp"
+#include "cursor.hpp"
 
 namespace zifmann {
 namespace chess {
 
-void MouseClickable::OnHoverEnter() { m_hovered = true; }
+void MouseClickable::OnHoverEnter() {
+    m_hovered = true;
+    Cursor::SetPointer();
+}
 
 void MouseClickable::OnHoverLeave() {
     m_hovered = false;
     m_down = false;
+    Cursor::SetNormal();
 }
 
 void MouseClickable::OnMouseMove(sf::Vector2i newPosition) {
@@ -43,9 +47,12 @@ void MouseClickable::SetAction(std::function<void()> action) {
 void MouseClickable::OnTrigger() { m_action(); }
 
 SpriteButton::SpriteButton(sf::Texture *texture, sf::IntRect textureRect[3],
-                           sf::IntRect offset, int anchor, ScaleMode scaleMode)
+                           sf::IntRect offset, int anchor, ScaleMode scaleMode,
+                           EventSystem &events)
     : CanvasSprite(texture, textureRect[0], offset, anchor, scaleMode),
-      m_spriteStates{textureRect[0], textureRect[1], textureRect[2]} {}
+      m_spriteStates{textureRect[0], textureRect[1], textureRect[2]} {
+    events.AddMouseListener(this);
+}
 
 void SpriteButton::OnHoverEnter() {
     MouseClickable::OnHoverEnter();
@@ -61,13 +68,16 @@ void SpriteButton::OnPushed() { m_sprite.setTextureRect(m_spriteStates[2]); }
 
 void SpriteButton::OnReleased() { m_sprite.setTextureRect(m_spriteStates[0]); }
 
+void SpriteButton::SetTint(const sf::Color &color) { m_sprite.setColor(color); }
+
 sf::FloatRect SpriteButton::GetRect() { return m_sprite.getGlobalBounds(); }
 
 LabeledButton::LabeledButton(sf::Texture *texture, sf::IntRect textureRect[3],
                              sf::IntRect offset, sf::IntRect labelOffset[3],
                              int anchor, ScaleMode scaleMode,
-                             sf::String labelString, sf::Font *font)
-    : SpriteButton(texture, textureRect, offset, anchor, scaleMode),
+                             sf::String labelString, sf::Font *font,
+                             EventSystem &events)
+    : SpriteButton(texture, textureRect, offset, anchor, scaleMode, events),
       m_label(labelString, font, labelOffset[0], CentreH | CentreV, Constant),
       m_labelState{labelOffset[0], labelOffset[1], labelOffset[2]} {}
 
@@ -77,7 +87,7 @@ void LabeledButton::OnHoverEnter() {
 }
 
 void LabeledButton::OnHoverLeave() {
-    SpriteButton::OnHoverEnter();
+    SpriteButton::OnHoverLeave();
     m_label.SetOffset(m_labelState[0]);
 }
 

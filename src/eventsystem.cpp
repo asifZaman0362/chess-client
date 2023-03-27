@@ -1,5 +1,7 @@
 #include "eventsystem.hpp"
 
+#include "logger.hpp"
+
 namespace zifmann {
 namespace chess {
 
@@ -19,6 +21,8 @@ void EventSystem::ProcessEvent(const sf::Event &event,
                 listener->OnKeyDown();
             break;
         case sf::Event::MouseMoved:
+            // log_debug("Mouse moved: %i %i", sf::Mouse::getPosition(window).x,
+            // sf::Mouse::getPosition(window).y);
             for (auto &listener : m_mouseListeners)
                 listener->OnMouseMove(sf::Mouse::getPosition(window));
             break;

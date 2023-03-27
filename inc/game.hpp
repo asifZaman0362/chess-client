@@ -12,7 +12,7 @@ class Game {
    private:
     sf::RenderWindow m_window;
     sf::Clock m_clock;
-    bool m_running = false;
+    static bool m_running;
 
     void Update(float dt);
     void Render();
@@ -21,6 +21,7 @@ class Game {
    public:
     Game();
     int Start();
+    static void Quit();
 };
 }  // namespace chess
 }  // namespace zifmann
