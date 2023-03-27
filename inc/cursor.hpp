@@ -15,6 +15,7 @@ class Cursor {
    public:
     Cursor() = default;
     // This function sets the default window for use with system cursors
+    // Can be ommitted if no calls to any cursor functions are made
     static void SetWindow(sf::RenderWindow* window);
     // This function is to be called when the window is created or later before
     // processing any scenes, as it sets up the initial state It may be avoided

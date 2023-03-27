@@ -3,6 +3,7 @@
 #include "assetmanager.hpp"
 #include "game.hpp"
 #include "logger.hpp"
+#include "prefs.hpp"
 #include "widgets.hpp"
 
 namespace zifmann {
@@ -13,7 +14,10 @@ MenuScene::MenuScene(sf::RenderWindow *window) {
     CreateUI();
     m_audioPlayer.setBuffer(*AssetManager::GetAudioClip("menu.ogg"));
     m_audioPlayer.setLoop(true);
-    m_audioPlayer.play();
+    if (!Prefs::GetInstance()->GetBool("musicdisabled")) {
+        m_audioPlayer.play();
+        m_music = true;
+    }
 }
 
 void MenuScene::CreateUI() {
@@ -63,6 +67,7 @@ void MenuScene::CreateUI() {
         new SpriteButton(AssetManager::GetTexture("music.png"),
                          textureRectSquare, sf::IntRect(-30, -64, 48, 48),
                          CentreH | CentreV, Constant, m_eventSystem);
+    musicButton->SetAction([this]() -> void { ToggleMusic(); });
     auto soundButton =
         new SpriteButton(AssetManager::GetTexture("sound.png"),
                          textureRectSquare, sf::IntRect(30, -64, 48, 48),
@@ -84,6 +89,24 @@ void MenuScene::Update(float dt) {}
 
 void MenuScene::ProcessEvent(const sf::Event &event) {
     m_eventSystem.ProcessEvent(event, *m_window);
+}
+
+void MenuScene::DisableMusic() {
+    m_audioPlayer.stop();
+    Prefs::GetInstance()->SetBool("musicdisabled", true)->Save();
+}
+
+void MenuScene::EnableMusic() {
+    m_audioPlayer.play();
+    Prefs::GetInstance()->SetBool("musicdisabled", false)->Save();
+}
+
+void MenuScene::ToggleMusic() {
+    m_music = !m_music;
+    if (m_music)
+        EnableMusic();
+    else
+        DisableMusic();
 }
 
 }  // namespace chess

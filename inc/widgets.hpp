@@ -2,6 +2,7 @@
 #define WIDGETS_HPP
 
 #include <functional>
+#include <vector>
 
 #include "canvas.hpp"
 #include "eventsystem.hpp"
@@ -14,6 +15,7 @@ class MouseClickable : public MouseListener {
     bool m_hovered;
     bool m_down;
     std::function<void()> m_action;
+    bool m_actionAdded = false;
 
    public:
     virtual void OnMouseButtonDown(sf::Mouse::Button button) override;

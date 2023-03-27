@@ -42,9 +42,12 @@ void MouseClickable::OnMouseButtonDown(sf::Mouse::Button button) {
 
 void MouseClickable::SetAction(std::function<void()> action) {
     m_action = action;
+    m_actionAdded = true;
 }
 
-void MouseClickable::OnTrigger() { m_action(); }
+void MouseClickable::OnTrigger() {
+    if (m_actionAdded) m_action();
+}
 
 SpriteButton::SpriteButton(sf::Texture *texture, sf::IntRect textureRect[3],
                            sf::IntRect offset, int anchor, ScaleMode scaleMode,
