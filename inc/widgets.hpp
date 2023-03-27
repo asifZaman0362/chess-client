@@ -54,6 +54,7 @@ class LabeledButton : public SpriteButton {
                   sf::IntRect offset, sf::IntRect labelOffset[3], int anchor,
                   ScaleMode scaleMode, sf::String labelString, sf::Font *font);
     void SetLabelColor(const sf::Color color);
+    void SetCharacterSize(int size);
     virtual void OnHoverEnter() override;
     virtual void OnHoverLeave() override;
     virtual void OnPushed() override;

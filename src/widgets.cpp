@@ -99,12 +99,19 @@ void LabeledButton::draw(sf::RenderTarget &target) const {
 void LabeledButton::Calculate(const sf::IntRect &parent) {
     SpriteButton::Calculate(parent);
     auto rect = GetRect();
+    // auto pos = m_sprite.getPosition();
+    auto size = m_sprite.getGlobalBounds();
     m_label.Calculate(
-        sf::IntRect(rect.left, rect.top, rect.width, rect.height));
+        sf::IntRect(size.left, size.top, size.width, size.height));
 }
 
 void LabeledButton::SetLabelColor(const sf::Color color) {
     m_label.GetText().setFillColor(color);
 }
+
+void LabeledButton::SetCharacterSize(int size) {
+    m_label.SetCharacterSize(size);
+}
+
 }  // namespace chess
 }  // namespace zifmann

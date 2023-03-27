@@ -84,13 +84,17 @@ void CanvasSprite::draw(sf::RenderTarget &target) const {
 
 CanvasText::CanvasText(const sf::String &string, sf::Font *font,
                        sf::IntRect offset, int anchor, ScaleMode scaleMode)
-    : CanvasItem(offset, anchor, scaleMode), m_string(string), m_font(*font) {
+    : CanvasItem(offset, anchor, scaleMode), m_string(string), m_font(font) {
     m_text.setFont(*font);
     m_text.setString(string);
 }
 
 sf::Vector2f round(const sf::Vector2f vector) {
     return sf::Vector2f{std::round(vector.x), std::round(vector.y)};
+}
+
+sf::Vector2i roundi(const sf::Vector2f vector) {
+    return sf::Vector2i{(int)std::round(vector.x), (int)std::round(vector.y)};
 }
 
 sf::Vector2f getPosition(sf::FloatRect rect) {
@@ -109,28 +113,53 @@ sf::Vector2f getSize(sf::IntRect rect) {
     return sf::Vector2f(rect.width, rect.height);
 }
 
+void CanvasText::SetCharacterSize(const unsigned int size) {
+    m_text.setCharacterSize(size);
+}
+
 void CanvasText::Calculate(const sf::IntRect &parent) {
-    // calculate the position first
     m_parent = &parent;
+    if (m_scaleMode == Scale) {  // best-fit
+        auto size =
+            getSize(*m_parent) - sf::Vector2f(m_offset.left + m_offset.width,
+                                              m_offset.top + m_offset.height);
+        auto rounded = roundi(size);
+        SetSize(rounded);
+    }
     auto center = sf::Vector2f{m_text.getGlobalBounds().width,
                                m_text.getGlobalBounds().height} /
                   2.f;
     auto localBounds = center + sf::Vector2f{m_text.getLocalBounds().left,
                                              m_text.getLocalBounds().top};
     auto rounded = round(localBounds);
-    m_text.setOrigin(rounded);
-    sf::Vector2i parentPosition, pos;
-    parentPosition.x = parent.width / 2 + parent.left;
-    parentPosition.y = parent.height / 2 + parent.top;
-    m_text.setOrigin(getSize(m_text.getGlobalBounds()) / 2.f +
-                     getPosition(m_text.getLocalBounds()));
-    m_text.setPosition(getPosition(parent) + (getSize(parent) / 2.f));
-    // Its centred by default, I don't want to worry about other alignments
-    // right now
-    /*if (m_scaleMode == Constant) {
-        SetPosition(pos);
-    } else {
-    }*/
+    float x = 0;
+    float y = 0;
+    float ox = 0;
+    float oy = 0;
+    if ((m_anchor & Top) == Top) {
+        y = m_offset.top + m_parent->top;
+    } else if ((m_anchor & Bottom) == Bottom) {
+        y = m_parent->top + m_parent->height - m_offset.top;
+        oy = getPosition(m_text.getLocalBounds()).y +
+             getSize(m_text.getGlobalBounds()).y;
+    } else if ((m_anchor & CentreV) == CentreV) {
+        y = m_offset.top + m_parent->top + m_parent->height / 2.0f;
+        oy = rounded.y;
+    }
+
+    if ((m_anchor & Left) == Left) {
+        x = m_offset.left + m_parent->left;
+    } else if ((m_anchor & Right) == Right) {
+        x = -m_offset.left + m_parent->left + m_parent->width;
+        ox = getPosition(m_text.getLocalBounds()).x +
+             getSize(m_text.getGlobalBounds()).x;
+    } else if ((m_anchor & CentreH) == CentreH) {
+        x = m_offset.left + m_parent->left + m_parent->width / 2.0f;
+        ox = rounded.x;
+    }
+    m_text.setOrigin(sf::Vector2(ox, oy));
+    log_debug("%i %i", m_offset.left, m_offset.top);
+    m_text.setPosition(x, y);
 }
 
 sf::FloatRect CanvasText::GetGlobalBounds() const {
@@ -139,7 +168,7 @@ sf::FloatRect CanvasText::GetGlobalBounds() const {
 
 sf::Text &CanvasText::GetText() { return m_text; }
 
-int findBestFitCharacterSize(const sf::String &str, const sf::Font &font,
+int findBestFitCharacterSize(const sf::String &str, const sf::Font *font,
                              const sf::Vector2f &size) {
     int minSize = 1;
     int maxSize = 100;
@@ -147,7 +176,7 @@ int findBestFitCharacterSize(const sf::String &str, const sf::Font &font,
     while (minSize < maxSize) {
         int csize = (minSize + maxSize) / 2;
 
-        sf::Text text(str, font, csize);
+        sf::Text text(str, *font, csize);
         sf::FloatRect bounds = text.getGlobalBounds();
 
         if (bounds.width <= size.x && bounds.height <= size.y) {
@@ -168,9 +197,6 @@ void CanvasText::SetSize(sf::Vector2i size) {
 
 void CanvasText::SetPosition(sf::Vector2i position) {
     m_text.setPosition(position.x, position.y);
-    log_debug("pos: %i %i", position.x, position.y);
-    log_debug("pos: %i %i", m_text.getGlobalBounds().left,
-              m_text.getGlobalBounds().width);
 }
 
 sf::Vector2f CanvasText::GetPixelSize() const {
