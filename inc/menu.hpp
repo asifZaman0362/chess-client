@@ -8,6 +8,8 @@
 namespace zifmann {
 namespace chess {
 
+class SpriteButton;
+
 class MenuScene : public State {
    private:
     Canvas m_canvas;
@@ -18,18 +20,20 @@ class MenuScene : public State {
 
    public:
     MenuScene(sf::RenderWindow *window);
+    ~MenuScene();
     void Render(sf::RenderTarget &target);
     void Update(float dt);
     void ProcessEvent(const sf::Event &event);
     // Non-scene methods
    private:
     void CreateUI();
-    void DisableSound();
-    void EnableSound();
-    void DisableMusic();
-    void EnableMusic();
-    void ToggleMusic();
-    void ToggleSound();
+    void DisableSound(SpriteButton *);
+    void EnableSound(SpriteButton *);
+    void DisableMusic(SpriteButton *);
+    void EnableMusic(SpriteButton *);
+    void ToggleMusic(SpriteButton *);
+    void ToggleSound(SpriteButton *);
+    void LoadGameScene();
 };
 
 }  // namespace chess

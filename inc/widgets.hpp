@@ -44,6 +44,7 @@ class SpriteButton : public CanvasSprite, public MouseClickable {
     virtual void OnReleased() override;
     virtual sf::FloatRect GetRect() override;
     void SetTint(const sf::Color &);
+    void SetTextureRect(sf::IntRect rect[3]);
     // virtual void draw(sf::RenderTarget &target) const override;
 };
 

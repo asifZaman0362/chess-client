@@ -14,6 +14,7 @@ class State {
     virtual void Render(sf::RenderTarget &target) = 0;
     virtual void Update(float dt) = 0;
     virtual void ProcessEvent(const sf::Event &event) = 0;
+    virtual void OnDestroy();
     virtual void OnQuit();
     virtual ~State() = default;
 };
@@ -21,6 +22,8 @@ class State {
 class StateManager {
    private:
     static std::stack<std::unique_ptr<State>> m_states;
+    static bool m_removeRequest;
+    static std::unique_ptr<State> m_stateToBeInserted;
 
    public:
     static void LoadState(std::unique_ptr<State> state, bool replace = true);

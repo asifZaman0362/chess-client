@@ -34,6 +34,7 @@ class EventSystem {
 
    public:
     EventSystem() = default;
+    ~EventSystem();
     void ProcessEvent(const sf::Event &event, sf::RenderWindow &window);
     void AddKeyListener(KeyListener *listener, sf::Keyboard::Key key);
     void RemoveKeyListener(KeyListener *listener, sf::Keyboard::Key key);
@@ -41,6 +42,7 @@ class EventSystem {
     void RemoveRawKeyListener(RawKeyListener *listener);
     void AddMouseListener(MouseListener *listener);
     void RemoveMouseListener(MouseListener *listener);
+    void ClearAllListeners();
 };
 
 }  // namespace chess

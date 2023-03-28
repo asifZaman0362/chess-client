@@ -5,8 +5,11 @@
 namespace zifmann {
 namespace chess {
 
+EventSystem::~EventSystem() { ClearAllListeners(); }
+
 void EventSystem::ProcessEvent(const sf::Event &event,
                                sf::RenderWindow &window) {
+    log_debug("mouse %i", m_mouseListeners.size());
     switch (event.type) {
         case sf::Event::KeyPressed:
             for (auto &listener : m_rawKeyListeners)
@@ -92,6 +95,12 @@ void EventSystem::RemoveMouseListener(MouseListener *listener) {
     if (pos != m_mouseListeners.end()) {
         m_mouseListeners.erase(pos);
     }
+}
+
+void EventSystem::ClearAllListeners() {
+    m_rawKeyListeners.clear();
+    m_mouseListeners.clear();
+    m_keyListeners.clear();
 }
 
 }  // namespace chess

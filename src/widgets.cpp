@@ -57,6 +57,13 @@ SpriteButton::SpriteButton(sf::Texture *texture, sf::IntRect textureRect[3],
     events.AddMouseListener(this);
 }
 
+void SpriteButton::SetTextureRect(sf::IntRect rect[3]) {
+    m_spriteStates[0] = rect[0];
+    m_spriteStates[1] = rect[1];
+    m_spriteStates[2] = rect[2];
+    m_sprite.setTextureRect(m_spriteStates[0]);
+}
+
 void SpriteButton::OnHoverEnter() {
     MouseClickable::OnHoverEnter();
     m_sprite.setTextureRect(m_spriteStates[1]);
