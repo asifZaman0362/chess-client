@@ -15,8 +15,24 @@ set(SOURCES src/main.cpp src/chessboard.cpp src/gamescene.cpp src/eventsystem.cp
             src/state.cpp src/game.cpp src/assetmanager.cpp src/canvas.cpp src/widgets.cpp
             src/animation.cpp src/logger.cpp src/menu.cpp src/cursor.cpp src/prefs.cpp)
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
-            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Assets/)
+# Set the path to the assets directory
+set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/Assets")
+
+# Set the destination path for the assets directory
+set(ASSETS_DEST "${CMAKE_BINARY_DIR}/Assets")
+
+# Create a custom command to copy the assets only when they have changed
+add_custom_command(
+    OUTPUT "${ASSETS_DEST}"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${ASSETS_DIR}" "${ASSETS_DEST}"
+    DEPENDS ${ASSETS_FILES}
+    COMMENT "Copying assets to build directory"
+)
+
+# Add the assets directory as a dependency for the build
+add_custom_target(copy_assets ALL DEPENDS "${ASSETS_DEST}")
+#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Assets/
+#            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Assets/)
 
 add_executable(${CMAKE_PROJECT_NAME} ${HEADERS} ${SOURCES})
 target_link_libraries(${CMAKE_PROJECT_NAME} sfml-system sfml-window sfml-graphics sfml-audio sfml-network)
