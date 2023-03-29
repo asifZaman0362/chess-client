@@ -1,6 +1,8 @@
 #ifndef GAMESCENE_HPP
 #define GAMESCENE_HPP
 
+#include <SFML/Audio/Sound.hpp>
+
 #include "animation.hpp"
 #include "chessboard.hpp"
 #include "state.hpp"
@@ -19,6 +21,7 @@ class GameScene : public State {
     ChessBoard m_board;
     sf::Sprite m_chessPiece;
     SpritesheetAnimation m_chessPieceAnim;
+    sf::Sound m_bgmPlayer;
 };
 
 }  // namespace chess

@@ -4,6 +4,7 @@
 
 #include "assetmanager.hpp"
 #include "logger.hpp"
+#include "prefs.hpp"
 
 namespace zifmann {
 namespace chess {
@@ -18,6 +19,10 @@ GameScene::GameScene() {
         log_error("failed to load animation!");
     } else {
         m_chessPieceAnim.Play();
+    }
+    m_bgmPlayer.setBuffer(*AssetManager::GetAudioClip("bgm.ogg"));
+    if (!Prefs::GetInstance()->GetBool("musicdisabled")) {
+        m_bgmPlayer.play();
     }
 }
 
