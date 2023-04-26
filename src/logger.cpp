@@ -40,6 +40,12 @@ void log(const logger_level level, const std::string &format,
                     string_builder << i;
                     break;
                 }
+                case 'u': {
+                    unsigned long int u =
+                        (unsigned long int)va_arg(args, unsigned long int);
+                    string_builder << u;
+                    break;
+                }
                 case 'f':
                 case 'd': {
                     double d = (double)va_arg(args, double);

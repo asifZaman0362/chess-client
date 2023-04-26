@@ -47,6 +47,9 @@ std::string makeJsonObject(std::unordered_map<std::string, std::string> props) {
 std::string OutgoingMessage::Serialize() const {
     std::unordered_map<std::string, std::string> props;
     switch (this->type) {
+        case Ping:
+            props["Ping"] = "";
+            break;
         case Enqueue:
             props["Enqueue"] = "";
             break;

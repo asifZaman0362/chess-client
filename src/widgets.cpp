@@ -37,6 +37,8 @@ void MouseClickable::OnMouseButtonDown(sf::Mouse::Button button) {
     if (m_hovered && button == sf::Mouse::Left) {
         OnPushed();
         m_down = true;
+    } else if (!m_hovered && button == sf::Mouse::Left) {
+        m_focus = false;
     }
 }
 
@@ -46,39 +48,17 @@ void MouseClickable::SetAction(std::function<void()> action) {
 }
 
 void MouseClickable::OnTrigger() {
+    m_focus = true;
     if (m_actionAdded) m_action();
 }
+
+bool MouseClickable::IsFocused() { return m_focus; }
 
 SpriteButton::SpriteButton(sf::Texture *texture, sf::IntRect textureRect[3],
                            sf::IntRect offset, int anchor, ScaleMode scaleMode,
                            EventSystem &events)
-    : CanvasSprite(texture, textureRect[0], offset, anchor, scaleMode),
-      m_spriteStates{textureRect[0], textureRect[1], textureRect[2]} {
-    events.AddMouseListener(this);
-}
-
-void SpriteButton::SetTextureRect(sf::IntRect rect[3]) {
-    m_spriteStates[0] = rect[0];
-    m_spriteStates[1] = rect[1];
-    m_spriteStates[2] = rect[2];
-    m_sprite.setTextureRect(m_spriteStates[0]);
-}
-
-void SpriteButton::OnHoverEnter() {
-    MouseClickable::OnHoverEnter();
-    m_sprite.setTextureRect(m_spriteStates[1]);
-}
-
-void SpriteButton::OnHoverLeave() {
-    MouseClickable::OnHoverLeave();
-    m_sprite.setTextureRect(m_spriteStates[0]);
-}
-
-void SpriteButton::OnPushed() { m_sprite.setTextureRect(m_spriteStates[2]); }
-
-void SpriteButton::OnReleased() { m_sprite.setTextureRect(m_spriteStates[0]); }
-
-void SpriteButton::SetTint(const sf::Color &color) { m_sprite.setColor(color); }
+    : InteractiveSprite(texture, textureRect, offset, anchor, scaleMode,
+                        events) {}
 
 sf::FloatRect SpriteButton::GetRect() { return m_sprite.getGlobalBounds(); }
 
@@ -131,6 +111,88 @@ void LabeledButton::SetLabelColor(const sf::Color color) {
 
 void LabeledButton::SetCharacterSize(int size) {
     m_label.SetCharacterSize(size);
+}
+
+InteractiveSprite::InteractiveSprite(sf::Texture *texture,
+                                     sf::IntRect textureRect[3],
+                                     sf::IntRect offset, int anchor,
+                                     ScaleMode scaleMode, EventSystem &events)
+    : CanvasSprite(texture, textureRect[0], offset, anchor, scaleMode),
+      m_spriteStates{textureRect[0], textureRect[1], textureRect[2]} {
+    events.AddMouseListener(this);
+}
+
+void InteractiveSprite::SetTextureRect(sf::IntRect rect[3]) {
+    m_spriteStates[0] = rect[0];
+    m_spriteStates[1] = rect[1];
+    m_spriteStates[2] = rect[2];
+    m_sprite.setTextureRect(m_spriteStates[0]);
+}
+
+void InteractiveSprite::OnHoverEnter() {
+    MouseClickable::OnHoverEnter();
+    m_sprite.setTextureRect(m_spriteStates[1]);
+}
+
+void InteractiveSprite::OnHoverLeave() {
+    MouseClickable::OnHoverLeave();
+    m_sprite.setTextureRect(m_spriteStates[0]);
+}
+
+void InteractiveSprite::OnPushed() {
+    m_sprite.setTextureRect(m_spriteStates[2]);
+}
+
+void InteractiveSprite::OnReleased() {
+    m_sprite.setTextureRect(m_spriteStates[0]);
+}
+
+void InteractiveSprite::SetTint(const sf::Color &color) {
+    m_sprite.setColor(color);
+}
+
+void TextField::OnKeyDown(sf::Keyboard::Key key) {
+    if (!IsFocused()) return;
+    if (key == sf::Keyboard::LShift || key == sf::Keyboard::RShift)
+        m_shift = true;
+    else
+        m_key = key;
+}
+
+void TextField::OnKeyUp(sf::Keyboard::Key key) {
+    if (!IsFocused()) return;
+    if (key == sf::Keyboard::LShift || key == sf::Keyboard::RShift)
+        m_shift = false;
+    else
+        m_key = sf::Keyboard::KeyCount;
+}
+
+void TextField::Update() {
+    if (m_key == sf::Keyboard::BackSpace && !m_string.isEmpty()) {
+        m_string.erase(m_string.getSize() - 1, 1);
+    }
+    if (m_key == sf::Keyboard::LShift) {
+        m_shift = true;
+    } else {
+        if (m_key <= 25) {
+            m_string += (char)(m_key + (m_shift ? 'A' : 'a'));
+        } else if (25 < m_key && m_key < 34) {
+            if (!m_shift) m_string += (char)(m_key + int('0'));
+        }
+    }
+}
+
+void TextField::draw(sf::RenderTarget &target) const {
+    InteractiveSprite::draw(target);
+    m_text.draw(target);
+}
+
+void TextField::SetTextColor(const sf::Color color) {
+    m_text.GetText().setFillColor(color);
+}
+
+void TextField::SetCharacterSize(int size) {
+    m_text.GetText().setCharacterSize(size);
 }
 
 }  // namespace chess

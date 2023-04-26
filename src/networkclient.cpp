@@ -74,6 +74,7 @@ void NetworkManager::UpdateWrite() {
         size_t writtenThisFrame = 0;
         auto status = m_socket.send(writeBuffer + writtenBytes, remainingWrite,
                                     writtenThisFrame);
+        log_info("written %u bytes", writtenThisFrame);
         writtenBytes += writtenThisFrame;
         remainingWrite -= writtenBytes;
         if (status == sf::Socket::Done) {

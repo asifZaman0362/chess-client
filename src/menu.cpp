@@ -95,7 +95,7 @@ void MenuScene::CreateUI() {
 
 void MenuScene::Render(sf::RenderTarget &target) { m_canvas.draw(target); }
 
-void MenuScene::Update(float dt) {}
+void MenuScene::Update(float dt) { m_canvas.Update(); }
 
 void MenuScene::ProcessEvent(const sf::Event &event) {
     m_eventSystem.ProcessEvent(event, *m_window);

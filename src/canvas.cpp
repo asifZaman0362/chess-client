@@ -80,6 +80,8 @@ void CanvasSprite::draw(sf::RenderTarget &target) const {
     target.draw(m_sprite);
 }
 
+void CanvasItem::Update() {}
+
 CanvasText::CanvasText(const sf::String &string, sf::Font *font,
                        sf::IntRect offset, int anchor, ScaleMode scaleMode)
     : CanvasItem(offset, anchor, scaleMode), m_string(string), m_font(font) {
@@ -222,6 +224,12 @@ void Canvas::UpdateCursorState(bool pointer) {
         s.left = m_cursorSize.width;
     }
     m_cursor.setTextureRect(s);
+}
+
+void Canvas::Update() {
+    for (auto child : m_items) {
+        child->Update();
+    }
 }
 
 Canvas::Canvas(Canvas &other) {
