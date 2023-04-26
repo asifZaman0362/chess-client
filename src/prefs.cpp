@@ -1,5 +1,7 @@
 #include "prefs.hpp"
 
+#include <string.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>

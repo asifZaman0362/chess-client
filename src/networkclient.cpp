@@ -1,5 +1,8 @@
 #include "networkclient.hpp"
 
+#include <cstring>
+#include <utility>
+
 #include "logger.hpp"
 #include "message.hpp"
 
@@ -7,14 +10,18 @@ namespace zifmann {
 namespace chess {
 namespace network {
 
-NetworkManager* NetworkManager::m_instance;
+sf::TcpSocket NetworkManager::m_socket;
+std::deque<OutgoingMessage> NetworkManager::outgoingQueue;
+std::deque<IncomingMessage> NetworkManager::incomingQueue;
 
-NetworkManager::NetworkManager() {}
+size_t NetworkManager::writtenBytes;
+size_t NetworkManager::readBytes;
+size_t NetworkManager::remainingWrite;
+size_t NetworkManager::remainingRead;
 
-NetworkManager* NetworkManager::GetInstance() {
-    if (!m_instance) m_instance = new NetworkManager();
-    return m_instance;
-}
+char* NetworkManager::writeBuffer;
+
+std::string NetworkManager::readBuffer;
 
 bool NetworkManager::Connect(const std::string& address, int port) {
     auto res = m_socket.connect(address, port);
@@ -22,14 +29,39 @@ bool NetworkManager::Connect(const std::string& address, int port) {
     return res == sf::Socket::Done;
 }
 
-void NetworkManager::SendMessage(const OutgoingMessage& message) {
-    outgoingQueue.push_back(message);
+bool NetworkManager::SendMessage(const OutgoingMessage& message,
+                                 bool blocking) {
+    if (blocking) {
+        auto serialized = message.Serialize() + "\n";
+        size_t len = serialized.length();
+        m_socket.setBlocking(true);
+        if (m_socket.send(serialized.c_str(), len) != sf::Socket::Done) {
+            m_socket.setBlocking(false);
+            return false;
+        } else {
+            m_socket.setBlocking(false);
+            return true;
+        }
+    } else {
+        outgoingQueue.push_back(message);
+        return true;
+    }
+}
+
+std::pair<bool, IncomingMessage> NetworkManager::ReadMessage() {
+    if (incomingQueue.empty())
+        return std::make_pair(false, IncomingMessage());
+    else {
+        auto msg = incomingQueue.front();
+        incomingQueue.pop_front();
+        return std::make_pair(true, msg);
+    }
 }
 
 void NetworkManager::UpdateWrite() {
     if (writeBuffer == nullptr) {
         if (!outgoingQueue.empty()) {
-            auto message = this->outgoingQueue.front().Serialize() + "\n";
+            auto message = outgoingQueue.front().Serialize() + "\n";
             outgoingQueue.pop_front();
             remainingWrite = message.length();
             writeBuffer = new char[remainingWrite];

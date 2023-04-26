@@ -4,7 +4,10 @@
 
 #include "assetmanager.hpp"
 #include "cursor.hpp"
+#include "logger.hpp"
 #include "menu.hpp"
+#include "message.hpp"
+#include "networkclient.hpp"
 
 namespace zifmann {
 namespace chess {
@@ -15,6 +18,10 @@ Game::Game() {}
 
 int Game::Start() {
     m_window.create(sf::VideoMode(1000, 1000), "SuperMegaChess");
+    if (!network::NetworkManager::Connect("127.0.0.1", 9000)) {
+        log_error("failed to connect to socket!");
+        exit(-1);
+    }
     m_window.setFramerateLimit(60);
     m_running = true;
     auto menu = std::make_unique<MenuScene>(&m_window);
@@ -38,7 +45,11 @@ int Game::Start() {
     return EXIT_SUCCESS;
 }
 
-void Game::Update(float dt) { StateManager::Update(dt); }
+void Game::Update(float dt) {
+    StateManager::Update(dt);
+    network::NetworkManager::UpdateRead();
+    network::NetworkManager::UpdateWrite();
+}
 
 void Game::ProcessEvents(const sf::Event &event) {
     if (event.type == sf::Event::MouseMoved) Cursor::Update();
@@ -53,6 +64,8 @@ void Game::Render() {
 }
 
 void Game::Quit() {
+    network::NetworkManager::SendMessage(
+        network::OutgoingMessage(network::Disconnect, {}), true);
     StateManager::OnQuit();
     m_running = false;
 }

@@ -4,6 +4,7 @@
 #include <SFML/Network.hpp>
 #include <deque>
 #include <string>
+#include <utility>
 
 #include "message.hpp"
 
@@ -13,31 +14,27 @@ namespace network {
 
 class NetworkManager {
    public:
-    NetworkManager* GetInstance();
-    bool Connect(const std::string& address, int port);
-    void SendMessage(const OutgoingMessage&);
-    void ReadMessage();
-    void UpdateRead();
-    void UpdateWrite();
+    NetworkManager() = default;
+    static bool Connect(const std::string& address, int port);
+    static bool SendMessage(const OutgoingMessage&, bool blocking = false);
+    static std::pair<bool, IncomingMessage> ReadMessage();
+    static void UpdateRead();
+    static void UpdateWrite();
 
    private:
-    static NetworkManager* m_instance;
-    sf::TcpSocket m_socket;
+    static sf::TcpSocket m_socket;
 
-    std::deque<OutgoingMessage> outgoingQueue;
-    std::deque<IncomingMessage> incomingQueue;
+    static std::deque<OutgoingMessage> outgoingQueue;
+    static std::deque<IncomingMessage> incomingQueue;
 
-    size_t writtenBytes;
-    size_t readBytes;
-    size_t remainingWrite;
-    size_t remainingRead;
+    static size_t writtenBytes;
+    static size_t readBytes;
+    static size_t remainingWrite;
+    static size_t remainingRead;
 
-    char* writeBuffer;
+    static char* writeBuffer;
 
-    std::string readBuffer;
-
-   private:
-    NetworkManager();
+    static std::string readBuffer;
 };
 
 }  // namespace network

@@ -1,7 +1,5 @@
 #include "eventsystem.hpp"
 
-#include "logger.hpp"
-
 namespace zifmann {
 namespace chess {
 
@@ -9,7 +7,6 @@ EventSystem::~EventSystem() { ClearAllListeners(); }
 
 void EventSystem::ProcessEvent(const sf::Event &event,
                                sf::RenderWindow &window) {
-    log_debug("mouse %i", m_mouseListeners.size());
     switch (event.type) {
         case sf::Event::KeyPressed:
             for (auto &listener : m_rawKeyListeners)

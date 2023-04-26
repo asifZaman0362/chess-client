@@ -1,7 +1,6 @@
 #include "message.hpp"
 
-#include <_types/_uint64_t.h>
-
+#include <cstdint>
 #include <sstream>
 #include <string_view>
 #include <unordered_map>
@@ -62,6 +61,9 @@ std::string OutgoingMessage::Serialize() const {
             break;
         case PlayAgain:
             props["PlayAgain"] = "";
+            break;
+        case Disconnect:
+            props["Disconnect"] = "";
             break;
         case MakeMove:
             auto details = std::get<MoveDetails>(this->data);

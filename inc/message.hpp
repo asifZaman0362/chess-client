@@ -41,7 +41,8 @@ enum OutgoingMessageType {
     MakeMove,
     LeaveGame,
     Login,
-    PlayAgain
+    PlayAgain,
+    Disconnect
 };
 
 enum PieceVariant { Rook, Knight, Bishop, Queen, King, Pawn };
