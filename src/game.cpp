@@ -46,9 +46,16 @@ int Game::Start() {
 }
 
 void Game::Update(float dt) {
+    using network::NetworkManager;
     StateManager::Update(dt);
-    network::NetworkManager::UpdateRead();
-    network::NetworkManager::UpdateWrite();
+    auto time = m_networkClock.getElapsedTime().asSeconds();
+    if (time > 5) {
+        NetworkManager::SendMessage(
+            network::OutgoingMessage(network::Ping, {}));
+        m_networkClock.restart();
+    }
+    NetworkManager::UpdateRead();
+    NetworkManager::UpdateWrite();
 }
 
 void Game::ProcessEvents(const sf::Event &event) {

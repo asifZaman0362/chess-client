@@ -12,6 +12,7 @@ class Game {
    private:
     sf::RenderWindow m_window;
     sf::Clock m_clock;
+    sf::Clock m_networkClock;
     static bool m_running;
 
     void Update(float dt);

@@ -36,6 +36,7 @@ class Pos : Serializable {
 };
 
 enum OutgoingMessageType {
+    Ping,
     Enqueue,
     Dequeue,
     MakeMove,
