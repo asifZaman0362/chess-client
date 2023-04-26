@@ -12,10 +12,19 @@ namespace zifmann {
 namespace chess {
 namespace network {
 
+template <typename T>
+struct DeserializationResult {
+    bool success;
+    T value;
+};
+
 class Serializable {
    public:
-    virtual std::string Serialize() = 0;
+    virtual std::string Serialize() const = 0;
 };
+
+template <typename T>
+DeserializationResult<T> FromString(const std::string&);
 
 class Pos : Serializable {
    public:
@@ -23,7 +32,7 @@ class Pos : Serializable {
     ushort x;
     ushort y;
 
-    std::string Serialize();
+    std::string Serialize() const;
 };
 
 enum OutgoingMessageType {
@@ -41,30 +50,34 @@ enum PieceColor { White, Black };
 
 class ChessPiece : Serializable {
    public:
-    ChessPiece() = default;
+    ChessPiece(PieceColor color, PieceVariant variant)
+        : color(color), variant(variant) {}
     PieceColor color;
     PieceVariant variant;
 
-    std::string Serialize();
+    std::string Serialize() const;
 };
 
 class MoveDetails : Serializable {
    public:
-    MoveDetails() = default;
+    MoveDetails(Pos from, Pos to, ChessPiece piece)
+        : from(from), to(to), piece(piece) {}
     Pos from;
     Pos to;
     ChessPiece piece;
 
-    std::string Serialize();
+    std::string Serialize() const;
 };
 
 class OutgoingMessage : Serializable {
    public:
-    OutgoingMessage() = default;
+    OutgoingMessage(OutgoingMessageType type,
+                    std::variant<std::string, MoveDetails> data)
+        : type(type), data(data) {}
     OutgoingMessageType type;
     std::variant<std::string, MoveDetails> data;
 
-    std::string Serialize();
+    std::string Serialize() const;
 };
 
 enum IncomingMessageType {
@@ -79,30 +92,21 @@ enum IncomingMessageType {
 };
 
 struct PieceMoveData {
-   public:
     ushort from;
     ushort to;
 };
 
 struct Result_t {
-   public:
     enum Status { Ok, Err } status;
     std::string error;
 };
 
 struct IncomingMessage {
-   public:
-    IncomingMessage() = default;
     IncomingMessageType type;
     std::variant<PieceMoveData, Result_t, ushort, std::string> data;
 };
 
-struct DeserializationResult {
-    bool success;
-    IncomingMessage value;
-};
-
-DeserializationResult Deserialize(std::string_view string);
+DeserializationResult<IncomingMessage> FromString(const std::string&);
 
 }  // namespace network
 }  // namespace chess
