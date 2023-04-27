@@ -35,7 +35,7 @@ class CanvasItem {
     virtual void SetPosition(sf::Vector2i position) = 0;
     virtual sf::Vector2f GetPixelSize() const = 0;
     virtual void draw(sf::RenderTarget &target) const = 0;
-    virtual void Update();
+    virtual void Update(float dt);
 };
 
 class CanvasSprite : public CanvasItem {
@@ -90,7 +90,7 @@ class Canvas {
     void UpdateSize(sf::Vector2u size);
     void SetCustomCursor(sf::Texture *cursorTexture, sf::IntRect rect);
     void UpdateCursorState(bool pointer);
-    void Update();
+    void Update(float dt);
 };
 
 }  // namespace chess

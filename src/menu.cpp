@@ -1,6 +1,9 @@
 #include "menu.hpp"
 
+#include <cstdlib>
+#include <ctime>
 #include <memory>
+#include <sstream>
 
 #include "assetmanager.hpp"
 #include "game.hpp"
@@ -12,6 +15,20 @@
 
 namespace zifmann {
 namespace chess {
+
+std::string GetRandomUsername() {
+    std::stringstream stream;
+    auto nouns = AssetManager::GetText("nouns.txt");
+    auto adjs = AssetManager::GetText("adj.txt");
+    srand(time(0));
+    size_t idx = rand() % adjs->size();
+    stream << adjs->at(idx);
+    idx = rand() % nouns->size();
+    stream << nouns->at(idx);
+    int num = rand() % 500;
+    stream << num;
+    return stream.str();
+}
 
 MenuScene::MenuScene(sf::RenderWindow *window) {
     m_window = window;
@@ -82,6 +99,19 @@ void MenuScene::CreateUI() {
                          Constant, m_eventSystem);
     soundButton->SetAction(
         [this, soundButton]() -> void { ToggleSound(soundButton); });
+    auto usernameLabel = new CanvasText(
+        "Enter username:", AssetManager::GetFont("kenneypixel.ttf"),
+        sf::IntRect(0, -180, 144, 32), CentreH | CentreV, Constant);
+
+    sf::IntRect textfieldTexRect[] = {sf::IntRect(0, 0, 96, 16),
+                                      sf::IntRect(96, 0, 96, 16),
+                                      sf::IntRect(192, 0, 96, 16)};
+    auto usernameInput = new TextField(
+        AssetManager::GetTexture("textfield.png"), textfieldTexRect,
+        sf::IntRect(0, 128, 144 * 2, 16 * 3), CentreH | CentreV,
+        ScaleMode::Constant, AssetManager::GetFont("kenneypixel.ttf"),
+        GetRandomUsername(), m_eventSystem);
+    usernameInput->SetTextColor(sf::Color::Black);
 
     m_canvas.AddChild(bg);
     m_canvas.AddChild(title);
@@ -90,12 +120,14 @@ void MenuScene::CreateUI() {
     m_canvas.AddChild(exitButton);
     m_canvas.AddChild(musicButton);
     m_canvas.AddChild(soundButton);
+    m_canvas.AddChild(usernameLabel);
+    m_canvas.AddChild(usernameInput);
     m_canvas.UpdateSize(sf::Vector2u(1000, 1000));
 }
 
 void MenuScene::Render(sf::RenderTarget &target) { m_canvas.draw(target); }
 
-void MenuScene::Update(float dt) { m_canvas.Update(); }
+void MenuScene::Update(float dt) { m_canvas.Update(dt); }
 
 void MenuScene::ProcessEvent(const sf::Event &event) {
     m_eventSystem.ProcessEvent(event, *m_window);

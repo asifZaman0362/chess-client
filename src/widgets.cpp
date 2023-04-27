@@ -1,6 +1,8 @@
 #include "widgets.hpp"
 
 #include "cursor.hpp"
+#include "eventsystem.hpp"
+#include "logger.hpp"
 
 namespace zifmann {
 namespace chess {
@@ -60,8 +62,6 @@ SpriteButton::SpriteButton(sf::Texture *texture, sf::IntRect textureRect[3],
     : InteractiveSprite(texture, textureRect, offset, anchor, scaleMode,
                         events) {}
 
-sf::FloatRect SpriteButton::GetRect() { return m_sprite.getGlobalBounds(); }
-
 LabeledButton::LabeledButton(sf::Texture *texture, sf::IntRect textureRect[3],
                              sf::IntRect offset, sf::IntRect labelOffset[3],
                              int anchor, ScaleMode scaleMode,
@@ -98,8 +98,8 @@ void LabeledButton::draw(sf::RenderTarget &target) const {
 
 void LabeledButton::Calculate(const sf::IntRect &parent) {
     SpriteButton::Calculate(parent);
-    auto rect = GetRect();
-    // auto pos = m_sprite.getPosition();
+    // auto rect = GetRect();
+    //  auto pos = m_sprite.getPosition();
     auto size = m_sprite.getGlobalBounds();
     m_label.Calculate(
         sf::IntRect(size.left, size.top, size.width, size.height));
@@ -151,36 +151,51 @@ void InteractiveSprite::SetTint(const sf::Color &color) {
     m_sprite.setColor(color);
 }
 
+sf::FloatRect InteractiveSprite::GetRect() {
+    return m_sprite.getGlobalBounds();
+}
+
+TextField::TextField(sf::Texture *texture, sf::IntRect textureRect[3],
+                     sf::IntRect offset, int anchor, ScaleMode scaleMode,
+                     sf::Font *font, sf::String placeholder,
+                     EventSystem &events)
+    : InteractiveSprite(texture, textureRect, offset, anchor, scaleMode,
+                        events),
+      m_text(placeholder, font,
+             sf::IntRect(10, 0, offset.width - 10, offset.height),
+             Left | CentreV, Constant) {
+    events.AddRawKeyListener(this);
+}
+
 void TextField::OnKeyDown(sf::Keyboard::Key key) {
+    // start initial timer
     if (!IsFocused()) return;
     if (key == sf::Keyboard::LShift || key == sf::Keyboard::RShift)
         m_shift = true;
-    else
-        m_key = key;
+    else {
+        if (key == sf::Keyboard::BackSpace && !m_string.isEmpty()) {
+            m_string.erase(m_string.getSize() - 1, 1);
+        }
+        if (key == sf::Keyboard::LShift) {
+            m_shift = true;
+        } else {
+            if (key <= 25) {
+                m_string += (char)(key + (m_shift ? 'A' : 'a'));
+            } else if (25 < key && key < 34) {
+                if (!m_shift) m_string += (char)(key + int('0'));
+            }
+        }
+        m_text.GetText().setString(m_string);
+    }
 }
 
 void TextField::OnKeyUp(sf::Keyboard::Key key) {
     if (!IsFocused()) return;
     if (key == sf::Keyboard::LShift || key == sf::Keyboard::RShift)
         m_shift = false;
-    else
-        m_key = sf::Keyboard::KeyCount;
 }
 
-void TextField::Update() {
-    if (m_key == sf::Keyboard::BackSpace && !m_string.isEmpty()) {
-        m_string.erase(m_string.getSize() - 1, 1);
-    }
-    if (m_key == sf::Keyboard::LShift) {
-        m_shift = true;
-    } else {
-        if (m_key <= 25) {
-            m_string += (char)(m_key + (m_shift ? 'A' : 'a'));
-        } else if (25 < m_key && m_key < 34) {
-            if (!m_shift) m_string += (char)(m_key + int('0'));
-        }
-    }
-}
+void TextField::Update(float dt) {}
 
 void TextField::draw(sf::RenderTarget &target) const {
     InteractiveSprite::draw(target);
@@ -193,6 +208,12 @@ void TextField::SetTextColor(const sf::Color color) {
 
 void TextField::SetCharacterSize(int size) {
     m_text.GetText().setCharacterSize(size);
+}
+
+void TextField::Calculate(const sf::IntRect &parent) {
+    InteractiveSprite::Calculate(parent);
+    auto rect = GetRect();
+    m_text.Calculate(sf::IntRect(rect.left, rect.top, rect.width, rect.height));
 }
 
 }  // namespace chess

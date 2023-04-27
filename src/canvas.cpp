@@ -80,7 +80,7 @@ void CanvasSprite::draw(sf::RenderTarget &target) const {
     target.draw(m_sprite);
 }
 
-void CanvasItem::Update() {}
+void CanvasItem::Update(float dt) {}
 
 CanvasText::CanvasText(const sf::String &string, sf::Font *font,
                        sf::IntRect offset, int anchor, ScaleMode scaleMode)
@@ -226,9 +226,9 @@ void Canvas::UpdateCursorState(bool pointer) {
     m_cursor.setTextureRect(s);
 }
 
-void Canvas::Update() {
+void Canvas::Update(float dt) {
     for (auto child : m_items) {
-        child->Update();
+        child->Update(dt);
     }
 }
 

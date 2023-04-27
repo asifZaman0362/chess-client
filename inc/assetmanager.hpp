@@ -13,6 +13,7 @@ class AssetManager {
     static std::unordered_map<const char *, sf::Image> m_images;
     static std::unordered_map<const char *, sf::SoundBuffer> m_audioClips;
     static std::unordered_map<const char *, sf::Font> m_fonts;
+    static std::unordered_map<const char *, std::vector<std::string>> m_text;
 
    public:
     AssetManager() = default;
@@ -21,6 +22,7 @@ class AssetManager {
     static sf::SoundBuffer *GetAudioClip(const char *filename);
     static sf::Font *GetFont(const char *filename);
     static sf::Image *GetImage(const char *filename);
+    static std::vector<std::string> *GetText(const char *filename);
 };
 }  // namespace chess
 }  // namespace zifmann
