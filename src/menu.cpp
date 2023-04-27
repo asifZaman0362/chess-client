@@ -32,11 +32,11 @@ std::string GetRandomUsername() {
     return stream.str();
 }
 
-void OnLoggedIn(network::IncomingMessage message) { log_debug("logged in!"); }
-
-void StartGame(std::string username) {
+void MenuScene::StartGame(std::string username) {
     auto message = network::OutgoingMessage(network::Login, username);
-    network::NetworkManager::AddCallback(network::Result, OnLoggedIn);
+    network::NetworkManager::AddCallback(
+        network::Result,
+        [this](network::IncomingMessage message) { LoadGameScene(); });
     network::NetworkManager::SendMessage(
         network::OutgoingMessage(network::Login, username));
 }
@@ -123,7 +123,7 @@ void MenuScene::CreateUI() {
         GetRandomUsername(), m_eventSystem);
     usernameInput->SetTextColor(sf::Color::Black);
 
-    playButton->SetAction([usernameInput]() -> void {
+    playButton->SetAction([this, usernameInput]() -> void {
         auto username = usernameInput->GetText();
         StartGame(username);
     });

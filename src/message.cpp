@@ -169,17 +169,35 @@ DeserializationResult<IncomingMessage> FromString(const std::string& str) {
                     } else
                         res.success = false;
                 } else if (field.key == ("Result")) {
-                    auto inner = simdjson::dom::object(doc["Result"]);
-                    data.type = Result;
-                    if (auto err = inner["Err"].get_string(); !err.error()) {
-                        std::string error = std::string(err.value());
-                        res.success = true;
-                        data.data = Result_t{Result_t::Status::Ok, error};
-                    } else if (!inner["Ok"].error()) {
-                        res.success = true;
-                        data.data = Result_t{Result_t::Status::Ok, ""};
+                    auto inner = doc["Result"];
+                    if (inner.is_object()) {
+                        data.type = Result;
+                        auto obj = simdjson::dom::object(inner);
+                        data.type = Result;
+                        if (auto err = inner["MoveError"].get_string();
+                            !err.error()) {
+                            std::string error = std::string(err.value());
+                            res.success = true;
+                            data.data = Result_t{Result_t::Status::Ok, error};
+                        } else if (!inner["Ok"].error()) {
+                            res.success = true;
+                            data.data = Result_t{Result_t::Status::Ok, ""};
+                        } else {
+                            res.success = false;
+                        }
                     } else {
-                        res.success = false;
+                        data.type = Result;
+                        if (auto scalar = doc["Result"].get_string();
+                            !scalar.error()) {
+                            if (scalar.value() == "Ok") {
+                                res.success = true;
+                                data.data = Result_t{Result_t::Status::Ok, ""};
+                            } else if (scalar.value() == "LoginError") {
+                                res.success = true;
+                                data.data = Result_t{Result_t::Status::Err,
+                                                     "LoginError"};
+                            }
+                        }
                     }
                 } else if (field.key == "Check") {
                     auto inner = doc["Check"];

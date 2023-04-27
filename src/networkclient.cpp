@@ -93,8 +93,9 @@ void NetworkManager::UpdateRead() {
         log_info("read %u bytes", readBytes);
     }
     if (auto pos = readBuffer.find('\n'); pos != std::string::npos) {
+        log_info(readBuffer);
         auto data = readBuffer.substr(0, pos);
-        readBuffer = readBuffer.substr(pos);
+        readBuffer = readBuffer.substr(pos + 1);
         log_info(data);
         auto deserRes = FromString<IncomingMessage>(data);
         if (deserRes.success) {

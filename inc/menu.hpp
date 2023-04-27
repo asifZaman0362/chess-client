@@ -3,6 +3,7 @@
 
 #include "canvas.hpp"
 #include "eventsystem.hpp"
+#include "message.hpp"
 #include "state.hpp"
 
 namespace zifmann {
@@ -33,6 +34,7 @@ class MenuScene : public State {
     void EnableMusic(SpriteButton *);
     void ToggleMusic(SpriteButton *);
     void ToggleSound(SpriteButton *);
+    void StartGame(std::string username);
     void LoadGameScene();
 };
 
