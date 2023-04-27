@@ -9,6 +9,8 @@
 #include "game.hpp"
 #include "gamescene.hpp"
 #include "logger.hpp"
+#include "message.hpp"
+#include "networkclient.hpp"
 #include "prefs.hpp"
 #include "state.hpp"
 #include "widgets.hpp"
@@ -28,6 +30,15 @@ std::string GetRandomUsername() {
     int num = rand() % 500;
     stream << num;
     return stream.str();
+}
+
+void OnLoggedIn(network::IncomingMessage message) { log_debug("logged in!"); }
+
+void StartGame(std::string username) {
+    auto message = network::OutgoingMessage(network::Login, username);
+    network::NetworkManager::AddCallback(network::Result, OnLoggedIn);
+    network::NetworkManager::SendMessage(
+        network::OutgoingMessage(network::Login, username));
 }
 
 MenuScene::MenuScene(sf::RenderWindow *window) {
@@ -76,7 +87,6 @@ void MenuScene::CreateUI() {
         Constant, "play", AssetManager::GetFont("kenneypixel.ttf"),
         m_eventSystem);
     playButton->SetCharacterSize(40);
-    playButton->SetAction([this]() -> void { LoadGameScene(); });
     playButton->SetLabelColor(sf::Color::Black);
     auto exitButton = new LabeledButton(
         AssetManager::GetTexture("button.png"), textureRect,
@@ -112,6 +122,11 @@ void MenuScene::CreateUI() {
         ScaleMode::Constant, AssetManager::GetFont("kenneypixel.ttf"),
         GetRandomUsername(), m_eventSystem);
     usernameInput->SetTextColor(sf::Color::Black);
+
+    playButton->SetAction([usernameInput]() -> void {
+        auto username = usernameInput->GetText();
+        StartGame(username);
+    });
 
     m_canvas.AddChild(bg);
     m_canvas.AddChild(title);

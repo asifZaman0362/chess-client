@@ -163,7 +163,8 @@ TextField::TextField(sf::Texture *texture, sf::IntRect textureRect[3],
                         events),
       m_text(placeholder, font,
              sf::IntRect(10, 0, offset.width - 10, offset.height),
-             Left | CentreV, Constant) {
+             Left | CentreV, Constant),
+      m_string(placeholder) {
     events.AddRawKeyListener(this);
 }
 
@@ -215,6 +216,8 @@ void TextField::Calculate(const sf::IntRect &parent) {
     auto rect = GetRect();
     m_text.Calculate(sf::IntRect(rect.left, rect.top, rect.width, rect.height));
 }
+
+std::string TextField::GetText() const { return m_string; }
 
 }  // namespace chess
 }  // namespace zifmann

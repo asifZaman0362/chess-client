@@ -1,6 +1,7 @@
 #include "message.hpp"
 
 #include <cstdint>
+#include <iostream>
 #include <sstream>
 #include <string_view>
 #include <unordered_map>
@@ -56,9 +57,10 @@ std::string OutgoingMessage::Serialize() const {
         case Dequeue:
             props["Dequeue"] = "";
             break;
-        case Login:
-            props["Login"] = std::get<std::string>(this->data);
+        case Login: {
+            props["Login"] = "\"" + std::get<std::string>(this->data) + "\"";
             break;
+        }
         case LeaveGame:
             props["LeaveGame"] = "";
             break;

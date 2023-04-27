@@ -91,6 +91,7 @@ class TextField : public InteractiveSprite, public RawKeyListener {
     virtual void Update(float dt) override;
     void SetTextColor(const sf::Color color);
     void SetCharacterSize(int size);
+    std::string GetText() const;
     virtual void OnPushed() override{};
     virtual void OnKeyDown(sf::Keyboard::Key key) override;
     virtual void OnKeyUp(sf::Keyboard::Key key) override;

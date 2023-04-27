@@ -12,7 +12,12 @@ namespace network {
 
 sf::TcpSocket NetworkManager::m_socket;
 std::deque<OutgoingMessage> NetworkManager::outgoingQueue;
-std::deque<IncomingMessage> NetworkManager::incomingQueue;
+std::unordered_map<IncomingMessageType,
+                   std::vector<std::function<void(IncomingMessage)>>>
+    NetworkManager::m_callbacks;
+std::unordered_map<IncomingMessageType,
+                   std::vector<std::function<void(IncomingMessage)>>>
+    NetworkManager::m_subscribers;
 
 size_t NetworkManager::writtenBytes;
 size_t NetworkManager::readBytes;
@@ -48,20 +53,11 @@ bool NetworkManager::SendMessage(const OutgoingMessage& message,
     }
 }
 
-std::pair<bool, IncomingMessage> NetworkManager::ReadMessage() {
-    if (incomingQueue.empty())
-        return std::make_pair(false, IncomingMessage());
-    else {
-        auto msg = incomingQueue.front();
-        incomingQueue.pop_front();
-        return std::make_pair(true, msg);
-    }
-}
-
 void NetworkManager::UpdateWrite() {
     if (writeBuffer == nullptr) {
         if (!outgoingQueue.empty()) {
             auto message = outgoingQueue.front().Serialize() + "\n";
+            log_debug("sending " + message);
             outgoingQueue.pop_front();
             remainingWrite = message.length();
             writeBuffer = new char[remainingWrite];
@@ -84,7 +80,7 @@ void NetworkManager::UpdateWrite() {
         } else if (status == sf::Socket::Error) {
             log_error("failed to send packet! something unexpected happened!");
         } else if (status == sf::Socket::Disconnected) {
-            log_error("your disconnected dumbass!");
+            log_error("youre disconnected dummy!");
         }
     }
 }
@@ -93,9 +89,37 @@ void NetworkManager::UpdateRead() {
     char buffer[1024];
     auto status = m_socket.receive(buffer, 1024, readBytes);
     readBuffer += buffer;
-    if (auto pos = readBuffer.find('\n'); pos != std::string::npos) {
-        // auto message = IncomingMessage::from();
+    if (readBytes > 0) {
+        log_info("read %u bytes", readBytes);
     }
+    if (auto pos = readBuffer.find('\n'); pos != std::string::npos) {
+        auto data = readBuffer.substr(0, pos);
+        readBuffer = readBuffer.substr(pos);
+        log_info(data);
+        auto deserRes = FromString<IncomingMessage>(data);
+        if (deserRes.success) {
+            auto message = deserRes.value;
+            if (!m_callbacks[message.type].empty()) {
+                for (auto callback : m_callbacks[message.type]) {
+                    if (callback != nullptr) {
+                        callback(message);
+                    }
+                }
+                m_callbacks[message.type].clear();
+            }
+        } else {
+            log_error("corrupted message received!");
+        }
+    }
+}
+
+void NetworkManager::AddCallback(IncomingMessageType type,
+                                 std::function<void(IncomingMessage)> action,
+                                 bool persist) {
+    if (persist)
+        m_subscribers[type].push_back(action);
+    else
+        m_callbacks[type].push_back(action);
 }
 
 }  // namespace network
