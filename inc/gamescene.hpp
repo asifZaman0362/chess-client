@@ -2,9 +2,13 @@
 #define GAMESCENE_HPP
 
 #include <SFML/Audio/Sound.hpp>
+#include <array>
+#include <utility>
 
 #include "animation.hpp"
+#include "canvas.hpp"
 #include "chessboard.hpp"
+#include "chesspiece.hpp"
 #include "state.hpp"
 
 namespace zifmann {
@@ -19,9 +23,12 @@ class GameScene : public State {
 
    private:
     ChessBoard m_board;
+    Canvas m_canvas;
     sf::Sprite m_chessPiece;
     SpritesheetAnimation m_chessPieceAnim;
     sf::Sound m_bgmPlayer;
+    std::array<std::pair<sf::Sprite, ChessPiece>, 32> m_pieceSprites;
+    friend void CreateUI(GameScene &scene);
 };
 
 }  // namespace chess

@@ -13,10 +13,9 @@ enum PieceKind {
     ROOK = 8,
     QUEEN = 16,
     KING = 32,
-    WHITE = 64
 };
 
-class ChessPiece {
+struct ChessPiece {
     Color m_color;
     Position m_position;
     PieceKind m_kind;
