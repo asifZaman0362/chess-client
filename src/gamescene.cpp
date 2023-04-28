@@ -1,6 +1,9 @@
 #include "gamescene.hpp"
 
+#include <SFML/Audio/SoundBuffer.hpp>
+#include <cstdlib>
 #include <cstring>
+#include <ctime>
 
 #include "assetmanager.hpp"
 #include "logger.hpp"
@@ -8,6 +11,15 @@
 
 namespace zifmann {
 namespace chess {
+
+sf::SoundBuffer *GetRandomAudioClip() {
+    srand(time(0));
+    int clip = rand() % 2;
+    if (clip) {
+        return AssetManager::GetAudioClip("creaturecomfort.ogg");
+    } else
+        return AssetManager::GetAudioClip("tranquility.ogg");
+}
 
 GameScene::GameScene() {
     m_board = ChessBoard();
@@ -20,7 +32,7 @@ GameScene::GameScene() {
     } else {
         m_chessPieceAnim.Play();
     }
-    m_bgmPlayer.setBuffer(*AssetManager::GetAudioClip("bgm.ogg"));
+    m_bgmPlayer.setBuffer(*GetRandomAudioClip());
     if (!Prefs::GetInstance()->GetBool("musicdisabled")) {
         m_bgmPlayer.play();
     }
