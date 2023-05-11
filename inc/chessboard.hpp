@@ -26,7 +26,7 @@ class ChessBoard {
 
    private:
     uint8_t m_config[8][8];
-    sf::RectangleShape quares[8][8];
+    sf::RectangleShape squares[8][8];
     std::array<std::pair<sf::Sprite, ChessPiece>, 32> m_pieces;
 };
 

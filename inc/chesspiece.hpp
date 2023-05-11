@@ -1,6 +1,8 @@
 #ifndef CHESSPIECE_HPP
 #define CHESSPIECE_HPP
 
+#include <SFML/Graphics/Sprite.hpp>
+
 #include "stdinc.hpp"
 
 namespace zifmann {
@@ -19,6 +21,7 @@ struct ChessPiece {
     Color m_color;
     Position m_position;
     PieceKind m_kind;
+    sf::Sprite m_sprite;
 };
 
 }  // namespace chess
