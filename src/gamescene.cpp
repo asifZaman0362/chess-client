@@ -37,9 +37,10 @@ void CreateUI(GameScene &scene) {
     scene.m_canvas.AddChild(m_opponentName);
 }
 
-GameScene::GameScene() {
-    m_board = ChessBoard();
+GameScene::GameScene(sf::RenderWindow *window)
+    : m_eventSystem(EventSystem()), m_board(m_eventSystem) {
     m_bgmPlayer.setBuffer(*GetRandomAudioClip());
+    m_window = window;
     CreateUI(*this);
     if (!Prefs::GetInstance()->GetBool("musicdisabled")) {
         m_bgmPlayer.play();
@@ -48,9 +49,11 @@ GameScene::GameScene() {
 
 void GameScene::Render(sf::RenderTarget &target) { m_board.Render(target); }
 
-void GameScene::Update(float dt) { m_chessPieceAnim.Update(dt); }
+void GameScene::Update(float dt) {}
 
-void GameScene::ProcessEvent(const sf::Event &event) {}
+void GameScene::ProcessEvent(const sf::Event &event) {
+    m_eventSystem.ProcessEvent(event, *m_window);
+}
 
 }  // namespace chess
 }  // namespace zifmann

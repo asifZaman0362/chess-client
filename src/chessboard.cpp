@@ -1,9 +1,12 @@
 #include "chessboard.hpp"
 
+#include <cstdint>
 #include <cstring>
 
 #include "assetmanager.hpp"
 #include "chesspiece.hpp"
+#include "eventsystem.hpp"
+#include "logger.hpp"
 #include "networkplayer.hpp"
 
 namespace zifmann {
@@ -44,17 +47,18 @@ void SetPieceSprite(ChessPiece &piece) {
     piece.m_sprite = sprite;
 }
 
-ChessBoard::ChessBoard() {
+ChessBoard::ChessBoard(EventSystem &eventSystem) {
+    eventSystem.AddMouseListener(this);
     memset(m_config, 0, 64);
-    m_config[0][0] = WHITE | ROOK;
-    m_config[0][1] = WHITE | KNIGHT;
-    m_config[0][2] = WHITE | BISHOP;
-    m_config[0][3] = WHITE | QUEEN;
-    m_config[0][4] = WHITE | KING;
-    m_config[0][5] = WHITE | BISHOP;
-    m_config[0][6] = WHITE | KNIGHT;
-    m_config[0][7] = WHITE | ROOK;
-    memset(m_config[1], PAWN | WHITE, 8);
+    m_config[0][0] = WHITE_PIECE | ROOK;
+    m_config[0][1] = WHITE_PIECE | KNIGHT;
+    m_config[0][2] = WHITE_PIECE | BISHOP;
+    m_config[0][3] = WHITE_PIECE | QUEEN;
+    m_config[0][4] = WHITE_PIECE | KING;
+    m_config[0][5] = WHITE_PIECE | BISHOP;
+    m_config[0][6] = WHITE_PIECE | KNIGHT;
+    m_config[0][7] = WHITE_PIECE | ROOK;
+    memset(m_config[1], PAWN | WHITE_PIECE, 8);
     memset(m_config[6], PAWN, 8);
     m_config[7][0] = ROOK;
     m_config[7][1] = KNIGHT;
@@ -157,6 +161,155 @@ void ChessBoard::Render(sf::RenderTarget &target) {
         target.draw(piece.m_sprite);
     }
 }
+
+int abs(int x) { return x * (int)(x >= 0) + (x * -1 * (int)(x < 0)); }
+
+bool IsValidMove(uint8_t piece, int i, int j, int x, int y) {
+    if (i < 8 && i >= 0 && j < 8 && j >= 0) {
+        int dx = abs(x - i);
+        int dy = abs(y - j);
+        uint8_t pieceKind = piece & ~WHITE_PIECE;
+        switch (pieceKind) {
+            case PAWN: {
+                if (dx == 0 && dy == 1) {
+                    return true;
+                }
+                break;
+            }
+            case ROOK: {
+                if ((dx == 0 && dy >= 1) || (dx >= 1 && dy == 0)) {
+                    return true;
+                }
+                break;
+            }
+            case BISHOP: {
+                if ((dx == dy && dy >= 1)) {
+                    return true;
+                }
+                break;
+            }
+            case KNIGHT: {
+                if ((dx == 1 && dy == 2) || (dx == 2 && dy == 1)) {
+                    return true;
+                }
+                break;
+            }
+            case KING: {
+                if ((dx <= 1 && dy <= 1) && (dx == 1 || dy == 1)) {
+                    return true;
+                }
+                break;
+            }
+            case QUEEN: {
+                if ((dx == dy && dx >= 1) || (dx == 0 && dy >= 1) ||
+                    (dx >= 1 && dy == 0)) {
+                    return true;
+                }
+                break;
+            }
+        }
+    }
+    return false;
+}
+
+void ChessBoard::HighlightValidSquares() {
+    // this is reversed as in x is column and y is row
+    // because memsetting otherwise in 2d arrays is shit
+    // i will fix this later, if it needs fixing that is :)
+    int piece = m_config[picked_y][picked_x];
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            int dx = abs(picked_x - i);
+            int dy = abs(picked_y - j);
+            auto pieceKind = piece & ~WHITE_PIECE;
+            squares[i][j].setOutlineColor(sf::Color::White);
+            squares[i][j].setOutlineThickness(0);
+            switch (pieceKind) {
+                case PAWN: {
+                    if (dx == 0 && dy == 1) {
+                        squares[i][j].setOutlineColor(sf::Color::Yellow);
+                        squares[i][j].setOutlineThickness(5);
+                    }
+                    break;
+                }
+                case ROOK: {
+                    if ((dx == 0 && dy >= 1) || (dx >= 1 && dy == 0)) {
+                        squares[i][j].setOutlineColor(sf::Color::Yellow);
+                        squares[i][j].setOutlineThickness(5);
+                    }
+                    break;
+                }
+                case BISHOP: {
+                    if ((dx == dy && dy >= 1)) {
+                        squares[i][j].setOutlineColor(sf::Color::Yellow);
+                        squares[i][j].setOutlineThickness(5);
+                    }
+                    break;
+                }
+                case KNIGHT: {
+                    if ((dx == 1 && dy == 2) || (dx == 2 && dy == 1)) {
+                        squares[i][j].setOutlineColor(sf::Color::Yellow);
+                        squares[i][j].setOutlineThickness(5);
+                    }
+                    break;
+                }
+                case KING: {
+                    if ((dx <= 1 && dy <= 1) && (dx == 1 || dy == 1)) {
+                        squares[i][j].setOutlineColor(sf::Color::Yellow);
+                        squares[i][j].setOutlineThickness(5);
+                    }
+                    break;
+                }
+                case QUEEN: {
+                    if ((dx == dy && dx >= 1) || (dx == 0 && dy >= 1) ||
+                        (dx >= 1 && dy == 0)) {
+                        squares[i][j].setOutlineColor(sf::Color::Yellow);
+                        squares[i][j].setOutlineThickness(5);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void ChessBoard::PickSquare(const sf::Vector2i mousePosition) {
+    if (picked_x < 8 && picked_x >= 0 && picked_y < 8 && picked_y >= 0) {
+        squares[picked_x][picked_y].setOutlineColor(sf::Color::Black);
+        squares[picked_x][picked_y].setOutlineThickness(0);
+    }
+    auto mouse = mousePosition;
+    // get x, y for tile from mouse position
+    auto pos = mouse / 100;
+    if (network::NetworkPlayer::PLAYER_WHITE_PIECES) {
+        picked_x = pos.x;
+        picked_y = 7 - pos.y;
+    } else {
+        picked_x = pos.x;
+        picked_y = pos.y;
+    }
+    if (picked_x < 8 && picked_x >= 0 && picked_y < 8 && picked_y >= 0) {
+        squares[picked_x][picked_y].setOutlineColor(sf::Color::Green);
+        squares[picked_x][picked_y].setOutlineThickness(5);
+    }
+}
+
+void ChessBoard::OnMouseButtonDown(sf::Mouse::Button button) {
+    if (picked_x < 8 && picked_x >= 0 && picked_y < 8 && picked_y >= 0) {
+        auto pieceInfo = m_config[picked_y][picked_y];
+        auto color = (pieceInfo & WHITE_PIECE) ==
+                     WHITE_PIECE;  // false => Black, true => White
+        if (color == network::NetworkPlayer::PLAYER_WHITE_PIECES) {
+            selected_x = picked_x;
+            selected_y = picked_y;
+            HighlightValidSquares();
+        }
+    }
+}
+
+void ChessBoard::OnMouseButtonUp(sf::Mouse::Button button) {}
+
+void ChessBoard::OnMouseMove(sf::Vector2i position) { PickSquare(position); }
 
 }  // namespace chess
 }  // namespace zifmann

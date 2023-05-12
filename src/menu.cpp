@@ -219,7 +219,7 @@ void MenuScene::ToggleSound(SpriteButton *button) {
 }
 
 void MenuScene::LoadGameScene() {
-    StateManager::LoadState(std::make_unique<GameScene>());
+    StateManager::LoadState(std::make_unique<GameScene>(m_window));
 }
 
 }  // namespace chess

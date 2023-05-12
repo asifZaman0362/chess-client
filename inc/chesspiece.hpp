@@ -15,6 +15,7 @@ enum PieceKind {
     ROOK = 8,
     QUEEN = 16,
     KING = 32,
+    WHITE_PIECE = 64,
 };
 
 struct ChessPiece {
