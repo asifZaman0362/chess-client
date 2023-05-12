@@ -3,7 +3,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <array>
-#include <utility>
 
 #include "chesspiece.hpp"
 #include "stdinc.hpp"
@@ -27,7 +26,7 @@ class ChessBoard {
    private:
     uint8_t m_config[8][8];
     sf::RectangleShape squares[8][8];
-    std::array<std::pair<sf::Sprite, ChessPiece>, 32> m_pieces;
+    std::array<ChessPiece, 32> m_pieces;
 };
 
 }  // namespace chess

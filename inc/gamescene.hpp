@@ -3,7 +3,6 @@
 
 #include <SFML/Audio/Sound.hpp>
 #include <array>
-#include <utility>
 
 #include "animation.hpp"
 #include "canvas.hpp"
@@ -27,7 +26,6 @@ class GameScene : public State {
     sf::Sprite m_chessPiece;
     SpritesheetAnimation m_chessPieceAnim;
     sf::Sound m_bgmPlayer;
-    std::array<std::pair<sf::Sprite, ChessPiece>, 32> m_pieceSprites;
     friend void CreateUI(GameScene &scene);
 };
 

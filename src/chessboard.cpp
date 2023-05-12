@@ -2,8 +2,47 @@
 
 #include <cstring>
 
+#include "assetmanager.hpp"
+#include "chesspiece.hpp"
+#include "networkplayer.hpp"
+
 namespace zifmann {
 namespace chess {
+
+void SetPieceSprite(ChessPiece &piece) {
+    sf::Sprite sprite(*AssetManager::GetTexture("chesspieces.png"));
+    sf::IntRect textureRect{0, 0, 16, 16};
+    if (piece.m_color == WHITE) {
+        textureRect.top += 16 * 6;
+    }
+    switch (piece.m_kind) {
+        case PAWN:
+            textureRect.top += 0;
+            break;
+        case ROOK:
+            textureRect.top += 16;
+            textureRect.left += 16;
+            break;
+        case KNIGHT:
+            textureRect.top += 32;
+            textureRect.left += 16;
+            break;
+        case BISHOP:
+            textureRect.top += 48;
+            textureRect.left += 16;
+            break;
+        case KING:
+            textureRect.top += 64;
+            textureRect.left += 16;
+            break;
+        case QUEEN:
+            textureRect.top += 80;
+            textureRect.left += 16;
+            break;
+    }
+    sprite.setTextureRect(textureRect);
+    piece.m_sprite = sprite;
+}
 
 ChessBoard::ChessBoard() {
     memset(m_config, 0, 64);
@@ -33,6 +72,55 @@ ChessBoard::ChessBoard() {
                                                            : sf::Color::Black);
         squares[x][y].setPosition(x * 100, y * 100);
     }
+    ChessPiece blacks[16];
+    for (size_t i = 0; i < 8; i++) {
+        auto &piece = blacks[i];
+        piece.m_color = BLACK;
+        piece.m_kind = PAWN;
+        piece.m_position = {uint8_t(i), 1};
+    }
+    blacks[8] = blacks[15] = {BLACK, {0, 0}, ROOK};
+    blacks[15].m_position.x = 7;
+    blacks[9] = blacks[14] = {BLACK, {1, 0}, KNIGHT};
+    blacks[14].m_position.x = 6;
+    blacks[10] = blacks[13] = {BLACK, {2, 0}, BISHOP};
+    blacks[13].m_position.x = 5;
+    blacks[11] = {BLACK, {3, 0}, QUEEN};
+    blacks[12] = {BLACK, {4, 0}, KING};
+    ChessPiece whites[16];
+    for (size_t i = 0; i < 8; i++) {
+        auto &piece = whites[i];
+        piece.m_color = WHITE;
+        piece.m_kind = PAWN;
+        piece.m_position = {uint8_t(i), 6};
+    }
+    whites[8] = whites[15] = {
+        WHITE,
+        {0, 7},
+        ROOK,
+    };
+    whites[15].m_position.x = 7;
+    whites[9] = whites[14] = {WHITE, {1, 7}, KNIGHT};
+    whites[14].m_position.x = 6;
+    whites[10] = whites[13] = {WHITE, {2, 7}, BISHOP};
+    whites[13].m_position.x = 5;
+    whites[11] = {WHITE, {3, 7}, QUEEN};
+    whites[12] = {WHITE, {4, 7}, KING};
+    size_t i = 0;
+    for (auto piece : blacks) {
+        m_pieces[i++] = piece;
+    }
+    for (auto piece : whites) {
+        m_pieces[i++] = piece;
+    }
+    for (auto &piece : m_pieces) {
+        SetPieceSprite(piece);
+        float y = network::NetworkPlayer::PLAYER_WHITE_PIECES
+                      ? 700 - piece.m_position.y * 100
+                      : piece.m_position.y * 100;
+        piece.m_sprite.setPosition(piece.m_position.x * 100 + 10, y + 10);
+        piece.m_sprite.setScale(5, 5);
+    }
 }
 
 bool ChessBoard::TakePiece(uint8_t x, uint8_t y) {
@@ -60,6 +148,9 @@ void ChessBoard::Render(sf::RenderTarget &target) {
         for (uint8_t y = 0; y < 8; y++) {
             target.draw(squares[x][y]);
         }
+    }
+    for (auto &piece : m_pieces) {
+        target.draw(piece.m_sprite);
     }
 }
 

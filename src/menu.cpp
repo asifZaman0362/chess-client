@@ -4,6 +4,7 @@
 #include <ctime>
 #include <memory>
 #include <sstream>
+#include <variant>
 
 #include "assetmanager.hpp"
 #include "game.hpp"
@@ -11,6 +12,7 @@
 #include "logger.hpp"
 #include "message.hpp"
 #include "networkclient.hpp"
+#include "networkplayer.hpp"
 #include "prefs.hpp"
 #include "state.hpp"
 #include "widgets.hpp"
@@ -35,10 +37,26 @@ std::string GetRandomUsername() {
 void MenuScene::StartGame(std::string username) {
     auto message = network::OutgoingMessage(network::Login, username);
     network::NetworkManager::AddCallback(
-        network::Result,
-        [this](network::IncomingMessage message) { LoadGameScene(); });
-    network::NetworkManager::SendMessage(
-        network::OutgoingMessage(network::Login, username));
+        network::Result, [this, username](network::IncomingMessage message) {
+            auto res = std::get<network::Result_t>(message.data);
+            if (res.status == network::Result_t::Ok) {
+                network::NetworkPlayer::PLAYER_USERNAME = username;
+                auto queueMessage =
+                    network::OutgoingMessage(network::Enqueue, "");
+                network::NetworkManager::SendMessage(queueMessage);
+            }
+        });
+    network::NetworkManager::AddCallback(
+        network::GameStarted, [this](network::IncomingMessage message) {
+            auto res = std::get<std::string>(message.data);
+            if (res == "White") {
+                network::NetworkPlayer::PLAYER_WHITE_PIECES = true;
+            } else if (res == "Black") {
+                network::NetworkPlayer::PLAYER_WHITE_PIECES = false;
+            }
+            LoadGameScene();
+        });
+    network::NetworkManager::SendMessage(message);
 }
 
 MenuScene::MenuScene(sf::RenderWindow *window) {
@@ -46,7 +64,7 @@ MenuScene::MenuScene(sf::RenderWindow *window) {
     m_audioPlayer.setBuffer(*AssetManager::GetAudioClip("menu.ogg"));
     m_audioPlayer.setLoop(true);
     if (!Prefs::GetInstance()->GetBool("musicdisabled")) {
-        m_audioPlayer.play();
+        // m_audioPlayer.play();
         m_music = true;
     }
     m_sound = !Prefs::GetInstance()->GetBool("sounddisabled");
@@ -158,7 +176,9 @@ void MenuScene::DisableMusic(SpriteButton *button) {
 }
 
 void MenuScene::EnableMusic(SpriteButton *button) {
-    m_audioPlayer.play();
+    if (!Prefs::GetInstance()->GetBool("musicdisabled")) {
+        // m_audioPlayer.play();
+    }
     sf::IntRect musicRect[] = {sf::IntRect(0, 0, 16, 16),
                                sf::IntRect(16, 0, 16, 16),
                                sf::IntRect(32, 0, 16, 16)};

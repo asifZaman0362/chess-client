@@ -11,11 +11,12 @@ include_directories(inc)
 set(HEADERS inc/stdinc.hpp inc/chessboard.hpp inc/chesspiece.hpp inc/eventsystem.hpp
             inc/game.hpp inc/gamescene.hpp inc/state.hpp inc/canvas.hpp inc/widgets.hpp
             inc/assetmanager.hpp inc/logger.hpp inc/animation.hpp inc/menu.hpp inc/math.hpp
-            inc/cursor.hpp inc/prefs.hpp inc/networkclient.hpp inc/message.hpp inc/simdjson.h)
+            inc/cursor.hpp inc/prefs.hpp inc/networkclient.hpp inc/message.hpp inc/simdjson.h
+            inc/networkplayer.hpp)
 set(SOURCES src/main.cpp src/chessboard.cpp src/gamescene.cpp src/eventsystem.cpp
             src/state.cpp src/game.cpp src/assetmanager.cpp src/canvas.cpp src/widgets.cpp
             src/animation.cpp src/logger.cpp src/menu.cpp src/math.cpp src/cursor.cpp src/prefs.cpp
-            src/networkclient.cpp src/message.cpp src/simdjson.cpp)
+            src/networkclient.cpp src/message.cpp src/simdjson.cpp src/networkplayer.cpp)
 
 # Set the path to the assets directory
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/Assets")

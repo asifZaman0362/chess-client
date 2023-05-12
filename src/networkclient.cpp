@@ -87,10 +87,11 @@ void NetworkManager::UpdateWrite() {
 
 void NetworkManager::UpdateRead() {
     char buffer[1024];
+    memset(buffer, 0, 1024);
     auto status = m_socket.receive(buffer, 1024, readBytes);
     readBuffer += buffer;
     if (readBytes > 0) {
-        log_info("read %u bytes", readBytes);
+        log_info("read %u bytes %s", readBytes, buffer);
     }
     if (auto pos = readBuffer.find('\n'); pos != std::string::npos) {
         log_info(readBuffer);
