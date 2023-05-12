@@ -67,10 +67,11 @@ ChessBoard::ChessBoard() {
     for (uint8_t i = 0; i < 64; i++) {
         auto x = i / 8;
         auto y = i % 8;
+        int ty = network::NetworkPlayer::PLAYER_WHITE_PIECES ? 7 - y : y;
         squares[x][y] = sf::RectangleShape(sf::Vector2f(100, 100));
         squares[x][y].setFillColor((i + ((i / 8) % 2)) % 2 ? sf::Color::White
                                                            : sf::Color::Black);
-        squares[x][y].setPosition(x * 100, y * 100);
+        squares[x][y].setPosition(x * 100, ty * 100);
     }
     ChessPiece blacks[16];
     for (size_t i = 0; i < 8; i++) {
@@ -115,6 +116,9 @@ ChessBoard::ChessBoard() {
     }
     for (auto &piece : m_pieces) {
         SetPieceSprite(piece);
+        float x = network::NetworkPlayer::PLAYER_WHITE_PIECES
+                      ? 700 - piece.m_position.x * 100
+                      : piece.m_position.x * 100;
         float y = network::NetworkPlayer::PLAYER_WHITE_PIECES
                       ? 700 - piece.m_position.y * 100
                       : piece.m_position.y * 100;
