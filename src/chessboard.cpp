@@ -2,11 +2,14 @@
 
 #include <cstdint>
 #include <cstring>
+#include <variant>
 
 #include "assetmanager.hpp"
 #include "chesspiece.hpp"
 #include "eventsystem.hpp"
 #include "logger.hpp"
+#include "message.hpp"
+#include "networkclient.hpp"
 #include "networkplayer.hpp"
 
 namespace zifmann {
@@ -49,6 +52,9 @@ void SetPieceSprite(ChessPiece &piece) {
 
 ChessBoard::ChessBoard(EventSystem &eventSystem) {
     eventSystem.AddMouseListener(this);
+    for (auto pieceColumn : m_piecePointers) {
+        pieceColumn.fill(nullptr);
+    }
     memset(m_config, 0, 64);
     m_config[0][0] = WHITE_PIECE | ROOK;
     m_config[0][1] = WHITE_PIECE | KNIGHT;
@@ -71,11 +77,12 @@ ChessBoard::ChessBoard(EventSystem &eventSystem) {
     for (uint8_t i = 0; i < 64; i++) {
         auto x = i / 8;
         auto y = i % 8;
-        int ty = network::NetworkPlayer::PLAYER_WHITE_PIECES ? 7 - y : y;
+        auto tx = network::NetworkPlayer::PLAYER_WHITE_PIECES ? 7 - x : x;
+        auto ty = network::NetworkPlayer::PLAYER_WHITE_PIECES ? 7 - y : y;
         squares[x][y] = sf::RectangleShape(sf::Vector2f(100, 100));
         squares[x][y].setFillColor((i + ((i / 8) % 2)) % 2 ? sf::Color::White
                                                            : sf::Color::Black);
-        squares[x][y].setPosition(x * 100, ty * 100);
+        squares[x][y].setPosition(tx * 100, ty * 100);
     }
     ChessPiece blacks[16];
     for (size_t i = 0; i < 8; i++) {
@@ -126,9 +133,35 @@ ChessBoard::ChessBoard(EventSystem &eventSystem) {
         float y = network::NetworkPlayer::PLAYER_WHITE_PIECES
                       ? 700 - piece.m_position.y * 100
                       : piece.m_position.y * 100;
-        piece.m_sprite.setPosition(piece.m_position.x * 100 + 10, y + 10);
+        piece.m_sprite.setPosition(x + 10, y + 10);
         piece.m_sprite.setScale(5, 5);
     }
+    for (int i = 0; i < 32; i++) {
+        m_piecePointers[m_pieces[i].m_position.x][m_pieces[i].m_position.y] =
+            m_pieces + i;
+    }
+    network::NetworkManager::AddCallback(
+        network::IncomingMessageType::MovePiece,
+        [this](network::IncomingMessage message) {
+            auto pieceMoveDetails =
+                std::get<network::PieceMoveData>(message.data);
+            auto fy = pieceMoveDetails.from / 8;
+            auto fx = pieceMoveDetails.from % 8;
+            auto ty = pieceMoveDetails.to / 8;
+            auto tx = pieceMoveDetails.to % 8;
+            log_debug("moving piece from: %i, %i to %i, %i", fx, fy, tx, ty);
+            MovePiece({fx, fy}, {tx, ty});
+        },
+        true);
+    network::NetworkManager::AddCallback(
+        network::IncomingMessageType::RemovePiece,
+        [this](network::IncomingMessage message) {
+            auto removePosition = std::get<ushort>(message.data);
+            auto x = removePosition % 8;
+            auto y = removePosition / 8;
+            TakePiece(x, y);
+        },
+        true);
 }
 
 bool ChessBoard::TakePiece(uint8_t x, uint8_t y) {
@@ -137,7 +170,33 @@ bool ChessBoard::TakePiece(uint8_t x, uint8_t y) {
     else if (!m_config[y][x])
         return false;  // empty
     // play animation of taking away the piece
+    m_config[y][x] = 0;
+    if (m_piecePointers[x][y] != nullptr) {
+        m_piecePointers[x][y]->m_position = {8, 8};
+        m_piecePointers[x][y]->m_sprite.setPosition(800, 200);
+        m_piecePointers[x][y] = nullptr;
+    }
     return true;
+}
+
+void ChessBoard::MovePiece(sf::Vector2i from, sf::Vector2i to) {
+    auto piece = m_config[from.y][from.x];
+    if (m_piecePointers[from.x][from.y] != nullptr) {
+        log_debug("ehe");
+        auto piece = m_piecePointers[from.x][from.y];
+        piece->m_position = {(uint8_t)to.x, (uint8_t)to.y};
+        float x = network::NetworkPlayer::PLAYER_WHITE_PIECES
+                      ? 700 - piece->m_position.x * 100
+                      : piece->m_position.x * 100;
+        float y = network::NetworkPlayer::PLAYER_WHITE_PIECES
+                      ? 700 - piece->m_position.y * 100
+                      : piece->m_position.y * 100;
+        piece->m_sprite.setPosition(x, y);
+        m_piecePointers[from.x][from.y] = nullptr;
+        m_piecePointers[to.x][to.y] = piece;
+    }
+    m_config[to.y][to.x] = piece;
+    m_config[from.y][from.x] = 0;
 }
 
 bool ChessBoard::MakeMove(uint8_t x, uint8_t y, uint8_t piece) {
@@ -282,7 +341,7 @@ void ChessBoard::PickSquare(const sf::Vector2i mousePosition) {
     // get x, y for tile from mouse position
     auto pos = mouse / 100;
     if (network::NetworkPlayer::PLAYER_WHITE_PIECES) {
-        picked_x = pos.x;
+        picked_x = 7 - pos.x;
         picked_y = 7 - pos.y;
     } else {
         picked_x = pos.x;
@@ -297,12 +356,55 @@ void ChessBoard::PickSquare(const sf::Vector2i mousePosition) {
 void ChessBoard::OnMouseButtonDown(sf::Mouse::Button button) {
     if (picked_x < 8 && picked_x >= 0 && picked_y < 8 && picked_y >= 0) {
         auto pieceInfo = m_config[picked_y][picked_y];
-        auto color = (pieceInfo & WHITE_PIECE) ==
-                     WHITE_PIECE;  // false => Black, true => White
-        if (color == network::NetworkPlayer::PLAYER_WHITE_PIECES) {
-            selected_x = picked_x;
-            selected_y = picked_y;
-            HighlightValidSquares();
+        if (selected_x < 8 && selected_y < 8) {
+            // Something has already been picked
+            // Make a move instead
+            auto selected = m_config[selected_y][selected_x];
+            auto color = ((selected & WHITE_PIECE) == WHITE_PIECE)
+                             ? network::PieceColor::White
+                             : network::PieceColor::Black;
+            auto variant = selected & ~WHITE_PIECE;
+            network::PieceVariant pvariant;
+            switch (variant) {
+                case ROOK:
+                    pvariant = network::PieceVariant::Rook;
+                    break;
+                case KNIGHT:
+                    pvariant = network::PieceVariant::Knight;
+                    break;
+                case BISHOP:
+                    pvariant = network::PieceVariant::Bishop;
+                    break;
+                case KING:
+                    pvariant = network::PieceVariant::King;
+                    break;
+                case QUEEN:
+                    pvariant = network::PieceVariant::Queen;
+                    break;
+                case PAWN:
+                    pvariant = network::PieceVariant::Pawn;
+                    break;
+            }
+            network::ChessPiece piece(color, pvariant);
+            network::Pos from, to;
+            from.x = selected_x;
+            from.y = selected_y;
+            to.x = picked_x;
+            to.y = picked_y;
+            network::MoveDetails details(from, to, piece);
+            network::OutgoingMessage message(
+                network::OutgoingMessageType::MakeMove, details);
+            network::NetworkManager::SendMessage(message);
+            selected_x = 8;
+            selected_y = 8;
+        } else {
+            auto color = (pieceInfo & WHITE_PIECE) ==
+                         WHITE_PIECE;  // false => Black, true => White
+            if (color == network::NetworkPlayer::PLAYER_WHITE_PIECES) {
+                selected_x = picked_x;
+                selected_y = picked_y;
+                HighlightValidSquares();
+            }
         }
     }
 }

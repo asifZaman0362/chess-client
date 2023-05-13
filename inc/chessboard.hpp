@@ -21,6 +21,7 @@ class ChessBoard : MouseListener {
     ChessBoard(EventSystem &eventSystem);
     bool MakeMove(uint8_t x, uint8_t y, uint8_t piece);
     bool TakePiece(uint8_t x, uint8_t y);
+    void MovePiece(sf::Vector2i from, sf::Vector2i to);
     void Render(sf::RenderTarget &target);
     void GenerateBoard(Color color);
     void PickSquare(const sf::Vector2i mousePosition);
@@ -31,11 +32,12 @@ class ChessBoard : MouseListener {
 
    private:
     uint8_t m_config[8][8];
+    std::array<std::array<ChessPiece *, 8>, 8> m_piecePointers;
     int picked_x = 0;
     int picked_y = 0;
-    int selected_x = -1, selected_y = -1;
+    int selected_x = 8, selected_y = 8;
     sf::RectangleShape squares[8][8];
-    std::array<ChessPiece, 32> m_pieces;
+    ChessPiece m_pieces[32];
     sf::RenderWindow *m_window;
 
     void HighlightValidSquares();

@@ -109,6 +109,13 @@ void NetworkManager::UpdateRead() {
                 }
                 m_callbacks[message.type].clear();
             }
+            if (!m_subscribers[message.type].empty()) {
+                for (auto callback : m_subscribers[message.type]) {
+                    if (callback != nullptr) {
+                        callback(message);
+                    }
+                }
+            }
         } else {
             log_error("corrupted message received!");
         }
